@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Trò Chơi Khoa Học - KHTN Song Ngữ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #e0e7ff;
+            --primary-dark: #4f46e5;
+            --bg-main: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 50%, #fdf4ff 100%);
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-light: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .floating-shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .floating-shape:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            background: #10b981;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .floating-shape:nth-child(2) {
+            width: 200px;
+            height: 200px;
+            background: #f59e0b;
+            top: 60%;
+            right: 15%;
+            animation-delay: -5s;
+        }
+
+        .floating-shape:nth-child(3) {
+            width: 250px;
+            height: 250px;
+            background: #3b82f6;
+            bottom: 20%;
+            left: 30%;
+            animation-delay: -10s;
+        }
+
+        .floating-shape:nth-child(4) {
+            width: 180px;
+            height: 180px;
+            background: #8b5cf6;
+            top: 30%;
+            right: 25%;
+            animation-delay: -15s;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-30px) rotate(10deg);
+            }
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            text-decoration: none;
+        }
+
+        .logo i {
+            font-size: 1.75rem;
+        }
+
+        .logo-text {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-nav {
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-nav:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        /* Content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 24px 80px;
+            text-align: center;
+            position: relative;
+        }
+
+        .page-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #1e1b4b 0%, #6366f1 50%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+        }
+
+        .page-subtitle {
+            color: var(--text-light);
+            font-size: 1.2rem;
+            margin-bottom: 60px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Games Grid */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 32px;
+        }
+
+        .game-card {
+            background: var(--card-bg);
+            border-radius: 28px;
+            padding: 40px 32px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+            display: block;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--card-accent), var(--card-accent-dark));
+        }
+
+        .game-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            border-color: var(--card-accent);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .game-icon-wrapper {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 24px;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            transition: all 0.4s;
+            position: relative;
+        }
+
+        .game-card:hover .game-icon-wrapper {
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        .game-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
+
+        .game-description {
+            font-size: 1rem;
+            color: var(--text-light);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .game-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* Math Card */
+        .math {
+            --card-accent: #10b981;
+            --card-accent-dark: #059669;
+        }
+
+        .math .game-icon-wrapper {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        }
+
+        .math .game-badge {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        /* Physics Card */
+        .physics {
+            --card-accent: #f59e0b;
+            --card-accent-dark: #d97706;
+        }
+
+        .physics .game-icon-wrapper {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
+
+        .physics .game-badge {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        /* Chemistry Card */
+        .chemistry {
+            --card-accent: #3b82f6;
+            --card-accent-dark: #2563eb;
+        }
+
+        .chemistry .game-icon-wrapper {
+            background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);
+        }
+
+        .chemistry .game-badge {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        /* Biology Card */
+        .biology {
+            --card-accent: #8b5cf6;
+            --card-accent-dark: #7c3aed;
+        }
+
+        .biology .game-icon-wrapper {
+            background: linear-gradient(135deg, #ede9fe 0%, #c4b5fd 100%);
+        }
+
+        .biology .game-badge {
+            background: #ede9fe;
+            color: #7c3aed;
+        }
+
+        /* Stats Banner */
+        .stats-banner {
+            margin-top: 60px;
+            padding: 32px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 24px;
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.3);
+        }
+
+        .stat-item {
+            text-align: center;
+            color: white;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 16px 20px;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .page-subtitle {
+                font-size: 1rem;
+            }
+
+            .container {
+                padding: 40px 16px 60px;
+            }
+
+            .game-card {
+                padding: 32px 24px;
+            }
+
+            .game-icon-wrapper {
+                width: 80px;
+                height: 80px;
+                font-size: 2.5rem;
+            }
+
+            .game-title {
+                font-size: 1.3rem;
+            }
+
+            .stats-banner {
+                flex-direction: column;
+                gap: 24px;
+            }
+
+            .stat-value {
+                font-size: 2rem;
+            }
+
+            .nav-buttons {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+    </div>
+
+    <header>
+        <a href="{{ url_for('index') }}" class="logo">
+            <i class="fa-solid fa-gamepad"></i>
+            <span class="logo-text">Phòng Trò Chơi</span>
+        </a>
+        <div class="nav-buttons">
+            <a href="{{ url_for('index') }}" class="btn-nav">
+                <i class="fa-solid fa-home"></i> Trang chủ
+            </a>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1 class="page-title">🎮 Phòng Trò Chơi Khoa Học</h1>
+        <p class="page-subtitle">Vừa chơi vừa học với kho tàng game Scratch tương tác từ cộng đồng toàn cầu</p>
+
+        <div class="games-grid">
+            <a href="{{ url_for('math_games') }}" class="game-card math">
+                <div class="game-icon-wrapper">🧮</div>
+                <h2 class="game-title">Toán học</h2>
+                <p class="game-description">Luyện tập tính toán, giải phương trình và tư duy logic qua các mini-game thú
+                    vị</p>
+                <span class="game-badge">
+                    <i class="fa-solid fa-puzzle-piece"></i> 5 trò chơi
+                </span>
+            </a>
+
+            <a href="{{ url_for('physics_games') }}" class="game-card physics">
+                <div class="game-icon-wrapper">⚛️</div>
+                <h2 class="game-title">Vật lý</h2>
+                <p class="game-description">Mô phỏng lực, chuyển động, trọng lực và các hiện tượng vật lý hấp dẫn</p>
+                <span class="game-badge">
+                    <i class="fa-solid fa-puzzle-piece"></i> 5 trò chơi
+                </span>
+            </a>
+
+            <a href="{{ url_for('chemistry_games') }}" class="game-card chemistry">
+                <div class="game-icon-wrapper">🧪</div>
+                <h2 class="game-title">Hóa học</h2>
+                <p class="game-description">Khám phá nguyên tử, phân tử, bảng tuần hoàn và các phản ứng hóa học</p>
+                <span class="game-badge">
+                    <i class="fa-solid fa-puzzle-piece"></i> 5 trò chơi
+                </span>
+            </a>
+
+            <a href="{{ url_for('biology_games') }}" class="game-card biology">
+                <div class="game-icon-wrapper">🌿</div>
+                <h2 class="game-title">Sinh học</h2>
+                <p class="game-description">Tìm hiểu tế bào, ADN, hệ sinh thái và thế giới sinh vật đa dạng</p>
+                <span class="game-badge">
+                    <i class="fa-solid fa-puzzle-piece"></i> 6 trò chơi
+                </span>
+            </a>
+        </div>
+
+        <div class="stats-banner">
+            <div class="stat-item">
+                <div class="stat-value">21</div>
+                <div class="stat-label">Trò chơi</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">4</div>
+                <div class="stat-label">Môn học</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">∞</div>
+                <div class="stat-label">Niềm vui</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toán học AI Tutor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- MathJax Configuration -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-light: #d1fae5;
+            --primary-dark: #059669;
+            --bg-main: #f0fdf4;
+            --bg-chat: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --sidebar-width: 280px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+        }
+
+        .logo i {
+            font-size: 1.5rem;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .btn-home {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-home:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        /* Main Layout - 3 Columns */
+        .main-layout {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Left Sidebar - Subject Navigation */
+        .left-sidebar {
+            width: var(--sidebar-width);
+            background: white;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar-title {
+            padding: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .subject-list {
+            padding: 12px;
+        }
+
+        .subject-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .subject-item:hover {
+            background: #f1f5f9;
+        }
+
+        .subject-item.active {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+
+        .subject-item .icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .subject-item.math .icon {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+        }
+
+        .subject-item.physics .icon {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+        }
+
+        .subject-item.chemistry .icon {
+            background: linear-gradient(135deg, #dbeafe, #93c5fd);
+        }
+
+        .subject-item.biology .icon {
+            background: linear-gradient(135deg, #ede9fe, #c4b5fd);
+        }
+
+        .subject-info {
+            flex: 1;
+        }
+
+        .subject-name {
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+
+        .subject-desc {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Center - Chat Area */
+        .chat-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            min-width: 0;
+        }
+
+        .chat-container {
+            flex: 1;
+            background: var(--bg-chat);
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        /* Messages */
+        .message {
+            display: flex;
+            gap: 12px;
+            max-width: 90%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .avatar.ai {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .avatar.user {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+
+        .bubble {
+            padding: 16px 20px;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        .message.ai .bubble {
+            background: #f8fafc;
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .message.user .bubble {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .bubble p {
+            margin-bottom: 12px;
+        }
+
+        .bubble p:last-child {
+            margin-bottom: 0;
+        }
+
+        .bubble ul,
+        .bubble ol {
+            margin: 12px 0;
+            padding-left: 24px;
+        }
+
+        .bubble li {
+            margin-bottom: 6px;
+        }
+
+        .bubble strong {
+            font-weight: 700;
+        }
+
+        .bubble h1,
+        .bubble h2,
+        .bubble h3 {
+            margin: 16px 0 8px;
+            font-weight: 700;
+        }
+
+        .bubble code {
+            background: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+
+        .bubble pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 12px 0;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 16px 20px;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #94a3b8;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+            }
+
+            30% {
+                transform: translateY(-6px);
+            }
+        }
+
+        /* Welcome Message */
+        .welcome-message {
+            text-align: center;
+            padding: 50px 20px;
+        }
+
+        .welcome-icon {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, var(--primary-light) 0%, #a7f3d0 100%);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.8rem;
+            margin: 0 auto 24px;
+        }
+
+        .welcome-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .welcome-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            font-size: 1rem;
+        }
+
+        .suggestion-chips {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .chip {
+            padding: 12px 18px;
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            border-radius: 24px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .chip:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            background: #fafafa;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 12px;
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 8px;
+            transition: border-color 0.2s;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--primary);
+        }
+
+        .input-wrapper textarea {
+            flex: 1;
+            border: none;
+            outline: none;
+            resize: none;
+            font-family: inherit;
+            font-size: 0.95rem;
+            padding: 12px 14px;
+            max-height: 120px;
+            line-height: 1.5;
+        }
+
+        .send-btn {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .input-hint {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        /* Right Sidebar - Games */
+        .right-sidebar {
+            width: var(--sidebar-width);
+            background: white;
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .games-section {
+            padding: 20px;
+        }
+
+        .games-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .game-card {
+            background: linear-gradient(135deg, var(--primary-light) 0%, #a7f3d0 100%);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 12px;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s;
+        }
+
+        .game-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .game-card-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+
+        .game-card-title {
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 4px;
+        }
+
+        .game-card-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .view-all-games {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px;
+            background: #f1f5f9;
+            border-radius: 12px;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .view-all-games:hover {
+            background: #e2e8f0;
+        }
+
+        /* Tips Section */
+        .tips-section {
+            padding: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .tip-box {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .tip-title {
+            font-weight: 600;
+            color: #92400e;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tip-text {
+            font-size: 0.8rem;
+            color: #a16207;
+            line-height: 1.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .right-sidebar {
+                display: none;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .left-sidebar {
+                display: none;
+            }
+
+            .chat-wrapper {
+                padding: 12px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .header {
+                padding: 12px 16px;
+            }
+
+            .logo-text {
+                display: none;
+            }
+
+            .chat-messages {
+                padding: 16px;
+            }
+
+            .message {
+                max-width: 95%;
+            }
+
+            .welcome-message {
+                padding: 30px 16px;
+            }
+
+            .welcome-icon {
+                width: 70px;
+                height: 70px;
+                font-size: 2rem;
+            }
+
+            .welcome-title {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">
+            <i class="fa-solid fa-calculator"></i>
+            <span class="logo-text">Toán học AI Tutor</span>
+        </div>
+        <a href="{{ url_for('index') }}" class="btn-home">
+            <i class="fa-solid fa-home"></i>
+            <span>Trang chủ</span>
+        </a>
+    </header>
+
+    <div class="main-layout">
+        <!-- Left Sidebar - Subject Navigation -->
+        <aside class="left-sidebar">
+            <div class="sidebar-title">
+                <i class="fa-solid fa-robot"></i> Chọn AI Tutor
+            </div>
+            <div class="subject-list">
+                <a href="{{ url_for('math_tutor') }}" class="subject-item math active">
+                    <div class="icon">🧮</div>
+                    <div class="subject-info">
+                        <div class="subject-name">Toán học</div>
+                        <div class="subject-desc">Đại số, Hình học, Giải tích</div>
+                    </div>
+                </a>
+                <a href="{{ url_for('physics_tutor') }}" class="subject-item physics">
+                    <div class="icon">⚛️</div>
+                    <div class="subject-info">
+                        <div class="subject-name">Vật lý</div>
+                        <div class="subject-desc">Cơ học, Điện từ, Quang học</div>
+                    </div>
+                </a>
+                <a href="{{ url_for('chemistry_tutor') }}" class="subject-item chemistry">
+                    <div class="icon">🧪</div>
+                    <div class="subject-info">
+                        <div class="subject-name">Hóa học</div>
+                        <div class="subject-desc">Nguyên tử, Phản ứng, Hữu cơ</div>
+                    </div>
+                </a>
+                <a href="{{ url_for('biology_tutor') }}" class="subject-item biology">
+                    <div class="icon">🌿</div>
+                    <div class="subject-info">
+                        <div class="subject-name">Sinh học</div>
+                        <div class="subject-desc">Tế bào, Di truyền, Sinh thái</div>
+                    </div>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Center - Chat Area -->
+        <div class="chat-wrapper">
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="welcome-message">
+                        <div class="welcome-icon">🧮</div>
+                        <h2 class="welcome-title">Xin chào! Thầy là AI Tutor Toán học</h2>
+                        <p class="welcome-subtitle">Thầy có thể giúp con giải đại số, hình học, hay các bài toán đố. Hãy
+                            đặt câu hỏi nhé!</p>
+                        <div class="suggestion-chips">
+                            <button class="chip"
+                                onclick="sendSuggestion('Giải phương trình bậc hai x² - 5x + 6 = 0')">Giải phương trình
+                                bậc hai</button>
+                            <button class="chip" onclick="sendSuggestion('Định lý Pythagoras là gì?')">Định lý
+                                Pythagoras</button>
+                            <button class="chip" onclick="sendSuggestion('Cách tính diện tích hình tròn')">Diện tích
+                                hình tròn</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-area">
+                    <form id="chatForm" class="input-wrapper">
+                        <textarea id="messageInput" placeholder="Nhập câu hỏi Toán học của con..." rows="1"></textarea>
+                        <button type="submit" class="send-btn" id="sendBtn">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </form>
+                    <p class="input-hint">Nhấn Enter để gửi • Shift+Enter để xuống dòng</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar - Games -->
+        <aside class="right-sidebar">
+            <div class="games-section">
+                <div class="games-title">
+                    <i class="fa-solid fa-gamepad"></i> Thư giãn
+                </div>
+                <a href="{{ url_for('math_games') }}" class="game-card">
+                    <div class="game-card-icon">🎯</div>
+                    <div class="game-card-title">Game Toán học</div>
+                    <div class="game-card-desc">5 trò chơi rèn tư duy</div>
+                </a>
+                <a href="{{ url_for('games') }}" class="view-all-games">
+                    <i class="fa-solid fa-th-large"></i> Xem tất cả trò chơi
+                </a>
+            </div>
+
+            <div class="tips-section">
+                <div class="tip-box">
+                    <div class="tip-title">
+                        <i class="fa-solid fa-lightbulb"></i> Mẹo học tập
+                    </div>
+                    <div class="tip-text">
+                        Hãy hỏi thầy theo từng bước nhỏ để hiểu sâu hơn. Đừng ngại hỏi lại nếu chưa rõ!
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        const form = document.getElementById('chatForm');
+        const input = document.getElementById('messageInput');
+        const chatMessages = document.getElementById('chatMessages');
+        const sendBtn = document.getElementById('sendBtn');
+        const SUBJECT = 'math';
+        let isFirstMessage = true;
+
+        input.addEventListener('input', function () {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                form.dispatchEvent(new Event('submit'));
+            }
+        });
+
+        function preprocessMath(text) {
+            const mathBlocks = [];
+            let counter = 0;
+            text = text.replace(/\$\$([\s\S]+?)\$\$/g, (match) => { mathBlocks[counter] = match; return `%%MATH_${counter++}%%`; });
+            text = text.replace(/\$([^\$\n]+?)\$/g, (match) => { mathBlocks[counter] = match; return `%%MATH_${counter++}%%`; });
+            return { text, mathBlocks };
+        }
+
+        function restoreMath(html, mathBlocks) {
+            mathBlocks.forEach((block, i) => { html = html.replace(`%%MATH_${i}%%`, block); });
+            return html;
+        }
+
+        function renderContent(text) {
+            const { text: protectedText, mathBlocks } = preprocessMath(text);
+            return restoreMath(marked.parse(protectedText), mathBlocks);
+        }
+
+        function renderMathJax(element) {
+            if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
+                MathJax.typesetPromise([element]).then(() => scrollToBottom());
+            }
+        }
+
+        function showTyping() {
+            const div = document.createElement('div');
+            div.className = 'message ai typing-msg';
+            div.innerHTML = `<div class="avatar ai"><i class="fa-solid fa-robot"></i></div><div class="bubble typing-indicator"><span></span><span></span><span></span></div>`;
+            chatMessages.appendChild(div);
+            scrollToBottom();
+            return div;
+        }
+
+        function addMessage(text, isUser = false) {
+            if (isFirstMessage) {
+                const welcome = chatMessages.querySelector('.welcome-message');
+                if (welcome) welcome.remove();
+                isFirstMessage = false;
+            }
+
+            const div = document.createElement('div');
+            div.className = 'message ' + (isUser ? 'user' : 'ai');
+            const avatar = isUser ? '<i class="fa-solid fa-user"></i>' : '<i class="fa-solid fa-robot"></i>';
+            const content = isUser ? text.replace(/</g, "&lt;").replace(/>/g, "&gt;") : renderContent(text);
+
+            div.innerHTML = `<div class="avatar ${isUser ? 'user' : 'ai'}">${avatar}</div><div class="bubble">${content}</div>`;
+            chatMessages.appendChild(div);
+            scrollToBottom();
+            if (!isUser) renderMathJax(div);
+        }
+
+        function scrollToBottom() { chatMessages.scrollTop = chatMessages.scrollHeight; }
+
+        function sendSuggestion(text) {
+            input.value = text;
+            form.dispatchEvent(new Event('submit'));
+        }
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const message = input.value.trim();
+            if (!message) return;
+
+            addMessage(message, true);
+            input.value = '';
+            input.style.height = 'auto';
+            sendBtn.disabled = true;
+
+            const loadingMsg = showTyping();
+
+            try {
+                const res = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message, subject: SUBJECT })
+                });
+
+                const data = await res.json();
+                loadingMsg.remove();
+                sendBtn.disabled = false;
+
+                if (data.response) addMessage(data.response, false);
+                else if (data.error) addMessage("❌ Lỗi: " + data.error, false);
+            } catch (err) {
+                loadingMsg.remove();
+                sendBtn.disabled = false;
+                addMessage("❌ Có lỗi kết nối xảy ra.", false);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) MathJax.typesetPromise();
+        });
+    </script>
+</body>
+
+</html>

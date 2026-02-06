@@ -23,7 +23,7 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 
-GENERATION_MODEL = 'gemini-2.5-flash-lite'
+GENERATION_MODEL = 'gemma-3-12b-it'
 EMBEDDING_MODEL = 'text-embedding-004'
 
 app = Flask(__name__)
@@ -49,9 +49,35 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     name = db.Column(db.Text, default='')
+    
+    # Legacy columns (kept for backward compatibility)
     level = db.Column(db.String(20), default='TB')
     history = db.Column(db.Text, default='')
     lydo = db.Column(db.Text, default='')
+    
+    # Subject-specific chat histories
+    history_math = db.Column(db.Text, default='')
+    history_physics = db.Column(db.Text, default='')
+    history_chemistry = db.Column(db.Text, default='')
+    history_biology = db.Column(db.Text, default='')
+    
+    # Subject-specific proficiency levels
+    level_math = db.Column(db.String(20), default='TB')
+    level_physics = db.Column(db.String(20), default='TB')
+    level_chemistry = db.Column(db.String(20), default='TB')
+    level_biology = db.Column(db.String(20), default='TB')
+    
+    # Subject-specific assessment reasons
+    lydo_math = db.Column(db.Text, default='')
+    lydo_physics = db.Column(db.Text, default='')
+    lydo_chemistry = db.Column(db.Text, default='')
+    lydo_biology = db.Column(db.Text, default='')
+    
+    # Question counters for tracking when to assess
+    question_count_math = db.Column(db.Integer, default=0)
+    question_count_physics = db.Column(db.Integer, default=0)
+    question_count_chemistry = db.Column(db.Integer, default=0)
+    question_count_biology = db.Column(db.Integer, default=0)
 
 with app.app_context():
     # Đảm bảo schema public tồn tại
@@ -200,23 +226,32 @@ def format_response(response):
         latex_matches.append(match.group(0))
         return f"__LATEX_{len(latex_matches)-1}__"
     
-    # Thay thế các đoạn LaTeX nội dòng ($...$) và độc lập ($$...$$)
-    response = re.sub(r'\$\$([^$]+)\$\$', store_latex, response)
-    response = re.sub(r'\$([^$]+)\$', store_latex, response)
+    # Thay thế các đoạn LaTeX độc lập ($$...$$) và nội dòng ($...$)
+    # Quan trọng: Phải thay thế $$ trước $ để tránh nhầm lẫn
+    response = re.sub(r'\$\$(.+?)\$\$', store_latex, response, flags=re.DOTALL)
+    response = re.sub(r'\$([^\$\n]+?)\$', store_latex, response)
 
     # Áp dụng định dạng Markdown
     formatted = re.sub(r'\*\*(.*?)\*\*', r'<strong style="font-weight:700;">\1</strong>', response)
     formatted = re.sub(r'(?<!\n)\*(?!\s)(.*?)(?<!\s)\*(?!\*)', r'<em style="font-style:italic;">\1</em>', formatted)
     formatted = re.sub(r'(?m)^\s*\*\s+(.*)', r'• <span style="line-height:1.6;">\1</span>', formatted)
+    
+    # Khôi phục cú pháp LaTeX TRƯỚC KHI thay thế newline
+    for i, latex in enumerate(latex_matches):
+        formatted = formatted.replace(f"__LATEX_{i}__", latex)
+    
+    # Thay thế newline SAU KHI đã khôi phục LaTeX
     formatted = formatted.replace('\n', '<br>')
 
     # Áp dụng highlight_terms cho các từ khóa toán học
+    # Chú ý: Không highlight nếu nằm trong LaTeX
     for term, color in highlight_terms.items():
-        formatted = formatted.replace(term, f'<span style="line-height:1.6; background:{color}; color:white; font-weight:bold; padding:2px 4px; border-radius:4px;">{term}</span>')
-
-    # Khôi phục cú pháp LaTeX
-    for i, latex in enumerate(latex_matches):
-        formatted = formatted.replace(f"__LATEX_{i}__", latex)
+        # Chỉ highlight nếu không nằm trong $ hoặc $$
+        formatted = re.sub(
+            r'(?<!\$)' + re.escape(term) + r'(?!\$)',
+            f'<span style="line-height:1.6; background:{color}; color:white; font-weight:bold; padding:2px 4px; border-radius:4px;">{term}</span>',
+            formatted
+        )
 
     return formatted
 
@@ -360,7 +395,35 @@ def register():
 
         try:
             hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-            user = User(username=username, password=hashed_password, name=name)
+            user = User(
+                username=username, 
+                password=hashed_password, 
+                name=name,
+                # Legacy columns
+                level='TB',
+                history='',
+                lydo='',
+                # Subject-specific histories
+                history_math='',
+                history_physics='',
+                history_chemistry='',
+                history_biology='',
+                # Subject-specific levels
+                level_math='TB',
+                level_physics='TB',
+                level_chemistry='TB',
+                level_biology='TB',
+                # Subject-specific reasons
+                lydo_math='',
+                lydo_physics='',
+                lydo_chemistry='',
+                lydo_biology='',
+                # Question counters
+                question_count_math=0,
+                question_count_physics=0,
+                question_count_chemistry=0,
+                question_count_biology=0
+            )
             db.session.add(user)
             db.session.commit()
             flash('Đăng ký thành công! Vui lòng đăng nhập.', 'success')
@@ -383,7 +446,6 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password, password):
             session['user_id'] = user.id
-            session['history'] = user.history.split('\n') if user.history else []
             flash('Đăng nhập thành công!', 'success')
             return redirect(url_for('index'))
         flash('Tên đăng nhập hoặc mật khẩu không đúng.', 'error')
@@ -392,14 +454,6 @@ def login():
 
 @app.route('/logout')
 def logout():
-    if 'user_id' in session:
-        user = db.session.get(User, session['user_id'])
-        if user:
-            user.history = '\n'.join(session.get('history', []))
-            db.session.commit()
-            print(f"User {user.username} history updated")
-        else:
-            print(f"User with ID {session['user_id']} not found")
     session.clear()
     flash('Đã đăng xuất thành công.', 'success')
     return redirect(url_for('login'))
@@ -409,12 +463,79 @@ def index():
     if 'user_id' not in session:
         flash('Vui lòng đăng nhập để tiếp tục.', 'error')
         return redirect(url_for('login'))
-    rag_status = "✅ Đã tải tài liệu RAG thành công" if RAG_DATA["is_ready"] else "⚠️ Chưa tải được tài liệu RAG."
-    user = db.session.get(User, session['user_id'])
-    if not user:
-        flash('Người dùng không tồn tại. Vui lòng đăng nhập lại.', 'error')
+    return redirect(url_for('home'))
+
+@app.route('/home')
+def home():
+    if 'user_id' not in session:
+        flash('Vui lòng đăng nhập để tiếp tục.', 'error')
         return redirect(url_for('login'))
-    return render_template('index.html', rag_status=rag_status, user_level=user.level)
+    return render_template('home.html')
+
+# Subject-specific tutor routes
+@app.route('/tutor/math')
+def math_tutor():
+    if 'user_id' not in session:
+        flash('Vui lòng đăng nhập để tiếp tục.', 'error')
+        return redirect(url_for('login'))
+    return render_template('math_tutor.html')
+
+@app.route('/tutor/physics')
+def physics_tutor():
+    if 'user_id' not in session:
+        flash('Vui lòng đăng nhập để tiếp tục.', 'error')
+        return redirect(url_for('login'))
+    return render_template('physics_tutor.html')
+
+@app.route('/tutor/chemistry')
+def chemistry_tutor():
+    if 'user_id' not in session:
+        flash('Vui lòng đăng nhập để tiếp tục.', 'error')
+        return redirect(url_for('login'))
+    return render_template('chemistry_tutor.html')
+
+@app.route('/tutor/biology')
+def biology_tutor():
+    if 'user_id' not in session:
+        flash('Vui lòng đăng nhập để tiếp tục.', 'error')
+        return redirect(url_for('login'))
+    return render_template('biology_tutor.html')
+
+# Games routes
+@app.route('/games')
+def games():
+    if 'user_id' not in session:
+        flash('Vui lòng đăng nhập để tiếp tục.', 'error')
+        return redirect(url_for('login'))
+    return render_template('games.html')
+
+@app.route('/games/math')
+def math_games():
+    if 'user_id' not in session:
+        flash('Vui lòng đăng nhập để tiếp tục.', 'error')
+        return redirect(url_for('login'))
+    return render_template('math_games.html')
+
+@app.route('/games/physics')
+def physics_games():
+    if 'user_id' not in session:
+        flash('Vui lòng đăng nhập để tiếp tục.', 'error')
+        return redirect(url_for('login'))
+    return render_template('physics_games.html')
+
+@app.route('/games/chemistry')
+def chemistry_games():
+    if 'user_id' not in session:
+        flash('Vui lòng đăng nhập để tiếp tục.', 'error')
+        return redirect(url_for('login'))
+    return render_template('chemistry_games.html')
+
+@app.route('/games/biology')
+def biology_games():
+    if 'user_id' not in session:
+        flash('Vui lòng đăng nhập để tiếp tục.', 'error')
+        return redirect(url_for('login'))
+    return render_template('biology_games.html')
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -422,114 +543,200 @@ def chat():
         return jsonify({'error': 'Vui lòng đăng nhập'}), 401
 
     user_message = request.json.get('message', '')
+    subject = request.json.get('subject', 'general')
     if not user_message:
         return jsonify({'response': format_response('Con hãy nhập câu hỏi nhé!')})
 
-    # Load history from session
-    history = session.get('history', [])
-    history.append(f"👧 Học sinh: {user_message}")
-
-    # 🔍 Truy xuất ngữ cảnh RAG
-    related_context = retrieve_context(user_message)
-    recent_history = "\n".join(history[-10:])
-
-    # Lấy level từ DB
+    # Get user from database
     user = db.session.get(User, session['user_id'])
     if not user:
         return jsonify({'error': 'Người dùng không tồn tại'}), 401
-    student_level = user.level
 
+    # Subject mapping to database columns
+    subject_mapping = {
+        'math': {
+            'history_col': 'history_math',
+            'level_col': 'level_math',
+            'lydo_col': 'lydo_math',
+            'counter_col': 'question_count_math'
+        },
+        'physics': {
+            'history_col': 'history_physics',
+            'level_col': 'level_physics',
+            'lydo_col': 'lydo_physics',
+            'counter_col': 'question_count_physics'
+        },
+        'chemistry': {
+            'history_col': 'history_chemistry',
+            'level_col': 'level_chemistry',
+            'lydo_col': 'lydo_chemistry',
+            'counter_col': 'question_count_chemistry'
+        },
+        'biology': {
+            'history_col': 'history_biology',
+            'level_col': 'level_biology',
+            'lydo_col': 'lydo_biology',
+            'counter_col': 'question_count_biology'
+        }
+    }
+
+    # Get subject-specific data or use general if subject not recognized
+    if subject not in subject_mapping:
+        subject = 'math'  # Default to math if subject not recognized
+    
+    subject_data = subject_mapping[subject]
+    
+    # Get current history for this subject
+    current_history_str = getattr(user, subject_data['history_col']) or ''
+    current_history = current_history_str.split('\n') if current_history_str else []
+    
+    # Add new question to history
+    current_history.append(f"👧 Học sinh: {user_message}")
+    
+    # 🔍 Retrieve RAG context
+    related_context = retrieve_context(user_message)
+    recent_history = "\n".join(current_history[-10:])
+
+    # Get subject-specific level
+    student_level = getattr(user, subject_data['level_col'])
+
+    # Subject-specific information with Enhanced Personas
+    subject_info = {
+        'math': {
+            'name': 'Toán học',
+            'name_en': 'Mathematics',
+            'focus': 'Đại số, Hình học, Số học, Phương trình, Hàm số, và các phép tính toán học',
+            'persona_instruction': """
+            - **Tư duy Logic:** Hãy giải thích mọi bước biến đổi phương trình/biểu thức thật rõ ràng (từ dòng này sang dòng kia đã làm gì).
+            - **Cấu trúc:** Sử dụng các gạch đầu dòng để tách biệt các bước giải.
+            - **Visualization:** Nếu là bài hình học, hãy mô tả hình vẽ thật chi tiết để học sinh hình dung được.
+            """
+        },
+        'physics': {
+            'name': 'Vật lý',
+            'name_en': 'Physics',
+            'focus': 'Cơ học, Điện học, Nhiệt học, Quang học, Lực, Năng lượng, và các định luật vật lý',
+            'persona_instruction': """
+            - **Hiện tượng thực tế:** Luôn bắt đầu bằng việc liên hệ vấn đề với hiện tượng thực tế xung quanh (ví dụ: tại sao xe dừng lại khi phanh).
+            - **Đơn vị:** Nhấn mạnh việc đổi đơn vị trước khi tính toán.
+            - **Bản chất:** Giải thích bản chất vật lý (tại sao lực tác dụng lại gây ra gia tốc) thay vì chỉ thay số vào công thức.
+            """
+        },
+        'chemistry': {
+            'name': 'Hóa học',
+            'name_en': 'Chemistry',
+            'focus': 'Nguyên tử, Phân tử, Phản ứng hóa học, Dung dịch, Axit-Bazơ-Muối, và Hóa học hữu cơ',
+            'persona_instruction': """
+            - **Cơ chế:** Mô tả quá trình phản ứng xảy ra ở cấp độ phân tử (nguyên tử nào tách ra, nguyên tử nào kết hợp).
+            - **Phương trình:** Luôn luôn cân bằng phương trình hóa học và ghi rõ trạng thái chất (rắn, lỏng, khí, dung dịch) nếu cần.
+            - **Màu sắc/Hiện tượng:** Mô tả màu sắc dung dịch, khí bay ra, hay kết tủa để học sinh dễ nhớ.
+            """
+        },
+        'biology': {
+            'name': 'Sinh học',
+            'name_en': 'Biology',
+            'focus': 'Tế bào, Di truyền, Sinh thái, Cơ thể người, Thực vật, Động vật, và Hệ sinh thái',
+            'persona_instruction': """
+            - **Hệ thống:** Giải thích sinh học như một hệ thống liên kết (tế bào -> mô -> cơ quan -> hệ cơ quan -> cơ thể).
+            - **So sánh:** Sử dụng phép so sánh đời sống (ví dụ: Ti thể giống như nhà máy điện của tế bào).
+            - **Quá trình:** Mô tả các quá trình sinh học theo trình tự thời gian hoặc nhân-quả rõ ràng.
+            """
+        },
+        'general': {
+            'name': 'Khoa học Tự nhiên',
+            'name_en': 'Natural Sciences',
+            'focus': 'Toán, Lý, Hóa, Sinh',
+            'persona_instruction': "- Hãy hướng dẫn học sinh xác định vấn đề thuộc môn học nào trước."
+        }
+    }
+
+    current_subject = subject_info.get(subject, subject_info['general'])
+    
     prompt = f"""
-    Bạn là **Thầy giáo Song ngữ Việt – Anh**, chuyên dạy các môn **Khoa học Tự nhiên (Toán, Lý, Hóa, Sinh)**.  
-    Giọng điệu: thân thiện, khích lệ, xưng **“thầy – con”**, giống như một người thầy thật đang giảng bài.
+    Bạn là **Thầy giáo Song ngữ Việt – Anh**, chuyên dạy môn **{current_subject['name']} ({current_subject['name_en']})**.  
+    Model: **Gemma-3-12B-IT** (Instruction Tuned for Education).
+    Giọng điệu: Thân thiện, khích lệ, chuyên nghiệp (Professional & Encouraging).
+    Xưng hô: **"thầy – con"**.
+    
+    **Chuyên môn:** {current_subject['focus']}
 
     ---
 
-    ### 🧠 **Thông tin nền:**
-    - 📚 **Tài liệu tham khảo (RAG):**  
-    {related_context}
-    - 💬 **Lịch sử hội thoại gần đây:**  
-    {recent_history}
-    - 👨‍🎓 **Năng lực hiện tại của học sinh:** {student_level}
-    - ❓ **Câu hỏi mới:** {user_message}
+    ### 🧠 **Thông tin ngữ cảnh (Context):**
+    - 📚 **RAG (Tài liệu):** {related_context}
+    - 💬 **Lịch sử trò chuyện:** {recent_history}
+    - 👨‍🎓 **Trình độ học sinh:** {student_level} (Hãy điều chỉnh độ khó từ vựng và khái niệm cho phù hợp).
+    - ❓ **Câu hỏi hiện tại:** {user_message}
 
     ---
 
-    ### 🎯 **Nhiệm vụ của thầy:**
-
-    1. **Hiểu rõ câu hỏi** — có thể bằng **tiếng Việt**, **tiếng Anh**, hoặc **cả hai**.  
-    2. **Trả lời song ngữ** theo từng câu, từng đoạn:
-    - Giải thích bằng **Tiếng Việt** trước theo từng câu, từng đoạn.
-    - Sau đó viết phần dịch tương ứng, mở đầu bằng:  
-        👉 <span style="line-height:1.6; background: darkblue; color:white; font-weight:bold; padding:2px 4px; border-radius:4px;">English Version</span>
-
-    3. **Trình bày công thức, biểu thức khoa học bằng LaTeX**, sử dụng:  
-    - `$...$` cho công thức trong dòng  
-    - `$$...$$` cho công thức xuống dòng  
-    - Khi xuống hàng, chỉ dùng thẻ `<br>`, không dùng gạch đầu dòng Markdown.
-    Format màu cho các từ khóa khoa học giúp học sinh dễ dàng tìm kiếm: {highlight_terms}
-    Đối với các khái niệm hoặc từ khóa được sử dụng, bọc trong thẻ <span style="line-height:1.6; background: (màu dựa trên highlight_terms); color:white; font-weight:bold; padding:2px 4px; border-radius:4px;">{{term}}</span>
-
-    4. **Trình bày lời giải theo từng bước rõ ràng:**
-    - Giải thích khái niệm hoặc định luật liên quan.  
-    - Hướng dẫn cách giải nếu là bài tập.  
-    - Cho **ví dụ tương tự** để luyện tập.  
-    - Dịch các **thuật ngữ khoa học quan trọng** sang tiếng Anh học thuật tương ứng.  
-
-    5. **Điều chỉnh lời giải theo năng lực học sinh:**
-    - 🧠 **Giỏi (Gioi):** Giải thích sâu, mở rộng, kèm bài nâng cao.  
-    - 💡 **Khá (Kha):** Giải thích chi tiết, ví dụ minh họa, bài tập khá.  
-    - 📘 **Trung bình (TB):** Giải thích từng bước, ví dụ cụ thể, bài tập cơ bản.  
-    - 🪶 **Yếu (Yeu):** Giải thích thật dễ, dùng ví dụ minh họa rõ ràng, bài tập nhập môn.
-
-    6. **Nếu câu trả lời quá dài:**
-    - Giữ ngữ cảnh liên tục giữa các phần.  
-    - Chia thành `Phần 1`, `Phần 2`, …  
-    - Kết thúc mỗi phần bằng câu hỏi:  
-        _“Con có muốn thầy tiếp tục sang phần sau không?”_
+    ### 💎 **Hướng dẫn sư phạm đặc biệt ({current_subject['name']}):**
+    {current_subject['persona_instruction']}
 
     ---
 
-    ### ✅ **Nguyên tắc trình bày:**
-    - Giải thích **để học sinh hiểu chứ không chỉ để trả lời**.  
-    - Duy trì giọng điệu tích cực, khuyến khích.  
-    - Dùng từ ngữ **chuẩn khoa học**, **dễ hiểu**, **dịch sát nghĩa**.  
-    - Song ngữ từng đoạn, giúp học sinh luyện đọc hiểu khoa học bằng tiếng Anh.
+    ### 🎯 **Cấu trúc câu trả lời bắt buộc:**
 
+    1.  **Phần Tiếng Việt (Vietnamese Explanation):**
+        -   Giải thích chi tiết, dễ hiểu, chia nhỏ vấn đề.
+        -   Sử dụng **Markdown chuẩn**: `**bold**`, `*italic*`, danh sách có dấu đầu dòng `-`, danh sách số `1.`
+        -   Sử dụng LaTeX cho công thức Toán/Lý/Hóa:
+            - Công thức trong dòng: `$x^2 + y^2 = z^2$`
+            - Công thức riêng dòng: `$$\\int_0^1 x^2 dx$$`
+        -   **QUAN TRỌNG:** Chỉ dùng Markdown thuần túy, KHÔNG dùng HTML tags.
+
+    2.  **Phần Tiếng Anh (English Translation - Learning Corner):**
+        -   Bắt đầu bằng tiêu đề: `### 👉 English Version`
+        -   Dịch nội dung chính sang tiếng Anh chuẩn học thuật.
+        -   Giữ nguyên công thức LaTeX.
+
+    3.  **Từ vựng quan trọng (Key Vocabulary):**
+        -   Liệt kê 3-5 từ khóa khoa học theo format:
+        -   `**Từ tiếng Việt** - English Term`
+
+    ---
+    
+    ### 📝 **Nguyên tắc định dạng:**
+    - Sử dụng Markdown thuần túy, KHÔNG dùng HTML
+    - Công thức toán: dùng `$...$` (inline) hoặc `$$...$$` (display)
+    - Xuống dòng: để trống một dòng giữa các đoạn
+    - Nhấn mạnh: `**bold**` hoặc `*italic*`
+    - Code/thuật ngữ: dùng backticks `như thế này`
     """
-
 
     try:
         model = genai.GenerativeModel(GENERATION_MODEL)
         response = model.generate_content(prompt)
         ai_text = response.text
 
-        # Lưu trả lời AI vào history
-        history.append(f"🧑‍🏫 Thầy/Cô: {ai_text}")
-
-        # Đánh giá level nếu đủ 5 câu hỏi mới
-        student_questions = [msg for msg in history if msg.startswith("👧 Học sinh:")]
-        if len(student_questions) % 10 == 0:
-            new_level, lydo = evaluate_student_level(history)
-            user.level = new_level
-            user.lydo = lydo  # lưu lý do vào cột lydo
-            db.session.commit()
-            print(f"User {user.username} level updated to {new_level} with reason: {lydo}")
-
-        # Lưu lịch sử câu hỏi học sinh vào session và database
-        history_questions = student_questions
-        # Đảm bảo mỗi tin nhắn xuống dòng riêng biệt
-        session['history'] = history_questions
-        user.history = '\n'.join([msg.strip() for msg in history_questions])  # Xóa khoảng trắng thừa và nối bằng \n
+        # Add AI response to history
+        current_history.append(f"🧑‍🏫 Thầy/Cô: {ai_text}")
+        
+        # Save updated history to database
+        setattr(user, subject_data['history_col'], '\n'.join(current_history))
+        
+        # Increment question counter for this subject
+        current_count = getattr(user, subject_data['counter_col']) or 0
+        new_count = current_count + 1
+        setattr(user, subject_data['counter_col'], new_count)
+        
+        # Check if we need to assess this subject (every 10 questions)
+        if new_count % 10 == 0:
+            # Assess THIS subject only
+            new_level, lydo = evaluate_student_level(current_history)
+            setattr(user, subject_data['level_col'], new_level)
+            setattr(user, subject_data['lydo_col'], lydo)
+            print(f"✅ User {user.username} - {subject.upper()} level updated to {new_level} after {new_count} questions")
+            print(f"   Reason: {lydo[:100]}...")
+        
+        # Commit all changes to database
         db.session.commit()
-        session.modified = True
-        print(f"User {user.username} history updated in database: {user.history}")
 
-        return jsonify({'response': format_response(ai_text)})
+        return jsonify({'response': ai_text})
 
     except Exception as e:
         print(f"❌ Lỗi Gemini: {e}")
-        return jsonify({'response': format_response("Thầy Gemini hơi mệt, con thử lại sau nhé!")})
+        return jsonify({'response': "Thầy Gemini hơi mệt, con thử lại sau nhé!"})
 # QUẢN LÝ HỌC SINH
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
@@ -549,36 +756,46 @@ def admin():
                 flash('Tên đăng nhập admin không đúng.', 'error')
         return render_template('admin_login.html')
     
-    # Xử lý upload file PDF
-    if request.method == 'POST' and 'file' in request.files:
-        file = request.files['file']
-        if file.filename == '':
-            flash('Không có file được chọn.', 'error')
-        elif file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(file_path)
-            flash(f'Upload {filename} thành công! Đã cập nhật RAG.', 'success')
-            initialize_rag_data()
-        else:
-            flash('Chỉ chấp nhận file PDF!', 'error')
-    
-    pdf_files = [f for f in os.listdir(app.config['UPLOAD_FOLDER']) if f.endswith('.pdf')] if os.path.exists(app.config['UPLOAD_FOLDER']) else []
-    
-    # Lấy dữ liệu taikhoan_hocsinh + tên học sinh
+    # Lấy dữ liệu năng lực học sinh theo từng môn
     taikhoan_hocsinh = User.query.all()
     user_data = []
     for user in taikhoan_hocsinh:
+        # Skip admin users
+        if user.username == 'lequangphuc':
+            continue
         user_data.append({
             'id': user.id,
             'username': user.username,
-            'name': user.name or "Chưa đặt tên",  # HIỂN THỊ TÊN
-            'level': user.level,
-            'lydo': user.lydo,
-            'history': user.history if user.history else 'Chưa có lịch sử'
+            'name': user.name or "Chưa đặt tên",
+            # Subject-specific levels
+            'level_math': user.level_math or 'TB',
+            'level_physics': user.level_physics or 'TB',
+            'level_chemistry': user.level_chemistry or 'TB',
+            'level_biology': user.level_biology or 'TB',
+            # Question counts
+            'count_math': user.question_count_math or 0,
+            'count_physics': user.question_count_physics or 0,
+            'count_chemistry': user.question_count_chemistry or 0,
+            'count_biology': user.question_count_biology or 0,
+            # Total questions
+            'total_questions': (user.question_count_math or 0) + (user.question_count_physics or 0) + 
+                              (user.question_count_chemistry or 0) + (user.question_count_biology or 0),
+            # Reasons (for detail view)
+            'lydo_math': user.lydo_math or '',
+            'lydo_physics': user.lydo_physics or '',
+            'lydo_chemistry': user.lydo_chemistry or '',
+            'lydo_biology': user.lydo_biology or ''
         })
     
-    return render_template('admin.html', pdf_files=pdf_files, user_data=user_data)
+    # Statistics
+    stats = {
+        'total_students': len(user_data),
+        'gioi_count': sum(1 for u in user_data if u['level_math'] == 'Gioi' or u['level_physics'] == 'Gioi' or u['level_chemistry'] == 'Gioi' or u['level_biology'] == 'Gioi'),
+        'kha_count': sum(1 for u in user_data if 'Kha' in [u['level_math'], u['level_physics'], u['level_chemistry'], u['level_biology']]),
+        'total_questions': sum(u['total_questions'] for u in user_data)
+    }
+    
+    return render_template('admin.html', user_data=user_data, stats=stats)
 
 @app.route('/admin/delete_pdf/<filename>', methods=['POST'])
 def delete_pdf(filename):

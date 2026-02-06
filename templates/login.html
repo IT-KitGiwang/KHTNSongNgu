@@ -2,75 +2,200 @@
 <html lang="vi">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Đăng nhập</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng nhập - Học tập KHTN Song ngữ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-      body {
-  /* Ảnh nền tổng thể */
-  background: url('https://sf-static.upanhlaylink.com/img/image_202510254eab585eca869553b497f7ae99f2c212.jpg') no-repeat center center fixed;
-  background-size: cover;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
-}
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-/* Lớp phủ mờ mịn */
-body::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px); /* hỗ trợ Safari */
-  z-index: 0;
-}
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 440px;
+      padding: 40px 30px;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      transition: transform 0.3s ease;
+    }
+
+    .login-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      color: #1e3a8a;
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    .input-group label {
+      display: block;
+      color: #1e293b;
+      font-weight: 500;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 1rem;
+      color: #334155;
+      transition: all 0.3s ease;
+      outline: none;
+      background: #f8fafc;
+    }
+
+    .input-group input:focus {
+      border-color: #3b82f6;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+    }
+
+    .footer-links {
+      text-align: center;
+      margin-top: 25px;
+      font-size: 0.9rem;
+      color: #64748b;
+    }
+
+    .footer-links a {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: #1e40af;
+      text-decoration: underline;
+    }
+
+    .flash-messages {
+      margin-bottom: 20px;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+    }
+
+    .alert-success {
+      background-color: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
+    .alert-error {
+      background-color: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .icon {
+      font-size: 3rem;
+      margin-bottom: 10px;
+      display: inline-block;
+    }
   </style>
 </head>
 
 <body>
-  <div class="container mt-5">
-    <div class="row justify-content-center">
-      <div class="col-md-6">
-        <div class="card shadow">
-          <div class="card-header bg-primary text-white text-center">
-            <h4>Đăng nhập</h4>
-          </div>
-          <div class="card-body">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-            {% for category, message in messages %}
-            <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show">
-              {{ message }}
-              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-            {% endfor %}
-            {% endif %}
-            {% endwith %}
+  <div class="login-card">
+    <div class="header">
+      <span class="icon">🎓</span>
+      <h1>Đăng nhập</h1>
+      <p>Chào mừng bạn quay trở lại với KHTN Song ngữ</p>
+    </div>
 
-            <form method="POST" action="{{ url_for('login') }}">
-              <div class="mb-3">
-                <label class="form-label">Tên đăng nhập</label>
-                <input type="text" name="username" class="form-control" required />
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Mật khẩu</label>
-                <input type="password" name="password" class="form-control" required />
-              </div>
-              <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>
-            </form>
-            <div class="text-center mt-3">
-              <a href="{{ url_for('register') }}" class="text-decoration-none">Chưa có tài khoản? Đăng ký</a>
-            </div>
-          </div>
-        </div>
+    <div class="flash-messages">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">
+        {{ message }}
       </div>
+      {% endfor %}
+      {% endif %}
+      {% endwith %}
+    </div>
+
+    <form method="POST" action="{{ url_for('login') }}">
+      <div class="input-group">
+        <label for="username">Tên đăng nhập</label>
+        <input type="text" id="username" name="username" required placeholder="Nhập tên đăng nhập của bạn">
+      </div>
+
+      <div class="input-group">
+        <label for="password">Mật khẩu</label>
+        <input type="password" id="password" name="password" required placeholder="Nhập mật khẩu">
+      </div>
+
+      <button type="submit" class="submit-btn">Đăng nhập ngay</button>
+    </form>
+
+    <div class="footer-links">
+      Chưa có tài khoản? <a href="{{ url_for('register') }}">Đăng ký miễn phí</a>
+      <br><br>
+      <a href="{{ url_for('admin') }}" style="color: #94a3b8; font-size: 0.8em;">Đăng nhập quản trị viên</a>
     </div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

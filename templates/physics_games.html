@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚛️ Game Vật lý - KHTN Song Ngữ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #f59e0b;
+            --primary-light: #fef3c7;
+            --primary-dark: #d97706;
+            --bg-page: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            --text-main: #78350f;
+            --card-shadow: 0 10px 40px rgba(245, 158, 11, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-page);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+        }
+
+        .logo i {
+            font-size: 1.75rem;
+        }
+
+        .logo-text {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-nav {
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-nav:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .page-intro {
+            text-align: center;
+            padding: 48px 20px 32px;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 12px;
+            letter-spacing: -1px;
+        }
+
+        .page-subtitle {
+            font-size: 1.1rem;
+            color: #6b7280;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .games-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px 60px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 28px;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid transparent;
+        }
+
+        .game-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: var(--primary);
+            box-shadow: 0 20px 50px rgba(245, 158, 11, 0.25);
+        }
+
+        .game-header {
+            padding: 20px 24px;
+            background: linear-gradient(135deg, var(--primary-light) 0%, #fde68a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .game-number {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+
+        .game-title {
+            flex: 1;
+            margin-left: 16px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-main);
+        }
+
+        .game-badge {
+            padding: 6px 12px;
+            background: var(--primary);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .iframe-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 75%;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+
+        .iframe-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        .game-footer {
+            padding: 16px 24px;
+            background: #fafafa;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .game-tip {
+            font-size: 0.85rem;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .fullscreen-btn {
+            padding: 8px 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .fullscreen-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 16px 20px;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .page-title {
+                font-size: 1.8rem;
+            }
+
+            .games-container {
+                grid-template-columns: 1fr;
+                padding: 0 16px 40px;
+            }
+
+            .nav-buttons {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo">
+            <i class="fa-solid fa-atom"></i>
+            <span class="logo-text">Game Vật lý</span>
+        </div>
+        <div class="nav-buttons">
+            <a href="{{ url_for('physics_tutor') }}" class="btn-nav">
+                <i class="fa-solid fa-robot"></i> Hỏi gia sư AI
+            </a>
+            <a href="{{ url_for('games') }}" class="btn-nav">
+                <i class="fa-solid fa-gamepad"></i> Môn khác
+            </a>
+            <a href="{{ url_for('index') }}" class="btn-nav">
+                <i class="fa-solid fa-home"></i> Trang chủ
+            </a>
+        </div>
+    </header>
+
+    <div class="page-intro">
+        <h1 class="page-title">⚛️ Trò Chơi Vật Lý</h1>
+        <p class="page-subtitle">Khám phá các hiện tượng vật lý thú vị qua trò chơi mô phỏng từ Scratch!</p>
+    </div>
+
+    <div class="games-container">
+        <!-- Game 1 -->
+        <div class="game-card">
+            <div class="game-header">
+                <div class="game-number">1</div>
+                <span class="game-title">Physics Simulator</span>
+                <span class="game-badge">Mô phỏng</span>
+            </div>
+            <div class="iframe-container">
+                <iframe src="https://scratch.mit.edu/projects/749923973/embed" allowtransparency="true" scrolling="no"
+                    allowfullscreen></iframe>
+            </div>
+            <div class="game-footer">
+                <span class="game-tip"><i class="fa-solid fa-lightbulb"></i> Thử nghiệm các định luật vật lý!</span>
+                <a href="https://scratch.mit.edu/projects/749923973/" target="_blank" class="fullscreen-btn">
+                    <i class="fa-solid fa-expand"></i> Mở rộng
+                </a>
+            </div>
+        </div>
+
+        <!-- Game 2 -->
+        <div class="game-card">
+            <div class="game-header">
+                <div class="game-number">2</div>
+                <span class="game-title">Gravity Explorer</span>
+                <span class="game-badge">Trọng lực</span>
+            </div>
+            <div class="iframe-container">
+                <iframe src="https://scratch.mit.edu/projects/254761260/embed" allowtransparency="true" scrolling="no"
+                    allowfullscreen></iframe>
+            </div>
+            <div class="game-footer">
+                <span class="game-tip"><i class="fa-solid fa-lightbulb"></i> Khám phá lực hấp dẫn!</span>
+                <a href="https://scratch.mit.edu/projects/254761260/" target="_blank" class="fullscreen-btn">
+                    <i class="fa-solid fa-expand"></i> Mở rộng
+                </a>
+            </div>
+        </div>
+
+        <!-- Game 3 -->
+        <div class="game-card">
+            <div class="game-header">
+                <div class="game-number">3</div>
+                <span class="game-title">Motion Lab</span>
+                <span class="game-badge">Chuyển động</span>
+            </div>
+            <div class="iframe-container">
+                <iframe src="https://scratch.mit.edu/projects/522242884/embed" allowtransparency="true" scrolling="no"
+                    allowfullscreen></iframe>
+            </div>
+            <div class="game-footer">
+                <span class="game-tip"><i class="fa-solid fa-lightbulb"></i> Nghiên cứu chuyển động!</span>
+                <a href="https://scratch.mit.edu/projects/522242884/" target="_blank" class="fullscreen-btn">
+                    <i class="fa-solid fa-expand"></i> Mở rộng
+                </a>
+            </div>
+        </div>
+
+        <!-- Game 4 -->
+        <div class="game-card">
+            <div class="game-header">
+                <div class="game-number">4</div>
+                <span class="game-title">Energy Quest</span>
+                <span class="game-badge">Năng lượng</span>
+            </div>
+            <div class="iframe-container">
+                <iframe src="https://scratch.mit.edu/projects/108611939/embed" allowtransparency="true" scrolling="no"
+                    allowfullscreen></iframe>
+            </div>
+            <div class="game-footer">
+                <span class="game-tip"><i class="fa-solid fa-lightbulb"></i> Tìm hiểu các dạng năng lượng!</span>
+                <a href="https://scratch.mit.edu/projects/108611939/" target="_blank" class="fullscreen-btn">
+                    <i class="fa-solid fa-expand"></i> Mở rộng
+                </a>
+            </div>
+        </div>
+
+        <!-- Game 5 -->
+        <div class="game-card">
+            <div class="game-header">
+                <div class="game-number">5</div>
+                <span class="game-title">Wave World</span>
+                <span class="game-badge">Sóng</span>
+            </div>
+            <div class="iframe-container">
+                <iframe src="https://scratch.mit.edu/projects/784479679/embed" allowtransparency="true" scrolling="no"
+                    allowfullscreen></iframe>
+            </div>
+            <div class="game-footer">
+                <span class="game-tip"><i class="fa-solid fa-lightbulb"></i> Khám phá thế giới sóng!</span>
+                <a href="https://scratch.mit.edu/projects/784479679/" target="_blank" class="fullscreen-btn">
+                    <i class="fa-solid fa-expand"></i> Mở rộng
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

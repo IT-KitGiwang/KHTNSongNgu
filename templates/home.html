@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Học tập KHTN Song ngữ - Teacher AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #2563eb;
+            --secondary-blue: #3b82f6;
+            --dark-blue: #1e3a8a;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-light: #64748b;
+            --success: #10b981;
+            --math-color: #16a34a;
+            --physics-color: #ca8a04;
+            --chemistry-color: #dc2626;
+            --biology-color: #0d9488;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e2e8f0;
+            padding: 16px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            font-size: 1.8rem;
+        }
+
+        .logo-text h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--dark-blue);
+        }
+
+        .logo-text span {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .btn-games {
+            padding: 8px 16px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-games:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+        .btn-logout {
+            padding: 8px 16px;
+            background: #fee2e2;
+            color: #991b1b;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: #fecaca;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 60px 20px 40px;
+        }
+
+        .hero h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--dark-blue);
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Flash Messages */
+        .flash-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .alert-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid #fecaca;
+        }
+
+        /* Subjects Grid */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            display: block;
+            width: 4px;
+            height: 24px;
+            background: var(--primary-blue);
+            border-radius: 2px;
+        }
+
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 60px;
+        }
+
+        .subject-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+        }
+
+        .subject-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            border-color: #bfdbfe;
+        }
+
+        .subject-icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+
+        .subject-card:hover .subject-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .subject-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--text-main);
+        }
+
+        .subject-name-en {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            font-weight: 500;
+            margin-bottom: 16px;
+            font-style: italic;
+        }
+
+        .subject-desc {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            line-height: 1.5;
+        }
+
+        /* Specific Colors */
+        .math:hover {
+            border-color: #86efac;
+            box-shadow: 0 20px 40px rgba(22, 163, 74, 0.1);
+        }
+
+        .math .subject-name {
+            color: var(--math-color);
+        }
+
+        .physics:hover {
+            border-color: #fde047;
+            box-shadow: 0 20px 40px rgba(202, 138, 4, 0.1);
+        }
+
+        .physics .subject-name {
+            color: var(--physics-color);
+        }
+
+        .chemistry:hover {
+            border-color: #fca5a5;
+            box-shadow: 0 20px 40px rgba(220, 38, 38, 0.1);
+        }
+
+        .chemistry .subject-name {
+            color: var(--chemistry-color);
+        }
+
+        .biology:hover {
+            border-color: #5eead4;
+            box-shadow: 0 20px 40px rgba(13, 148, 136, 0.1);
+        }
+
+        .biology .subject-name {
+            color: var(--biology-color);
+        }
+
+
+        /* CTA Section */
+        .games-cta {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            border-radius: 24px;
+            padding: 40px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .games-cta-content {
+            z-index: 2;
+            max-width: 600px;
+        }
+
+        .games-cta h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .games-cta p {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 24px;
+        }
+
+        .game-btn {
+            display: inline-block;
+            background: white;
+            color: var(--primary-blue);
+            padding: 12px 28px;
+            border-radius: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: transform 0.2s;
+        }
+
+        .game-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .cta-decoration {
+            font-size: 10rem;
+            position: absolute;
+            right: 20px;
+            bottom: -20px;
+            opacity: 0.1;
+            transform: rotate(-15deg);
+        }
+
+        @media (max-width: 768px) {
+            .hero h2 {
+                font-size: 2rem;
+            }
+
+            .games-cta {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .cta-decoration {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="{{ url_for('home') }}" class="logo">
+            <span class="logo-icon">🎓</span>
+            <div class="logo-text">
+                <h1>KHTN Song ngữ</h1>
+                <span>AI Education Platform</span>
+            </div>
+        </a>
+        <div class="nav-actions">
+            <a href="{{ url_for('games') }}" class="btn-games">
+                <span>🎮</span> Giải trí
+            </a>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Đăng xuất</a>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert-{{ category }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Hero -->
+    <header class="hero">
+        <h2>Học cùng Giáo viên AI</h2>
+        <p>Hệ thống gia sư thông minh hỗ trợ 4 môn Khoa học Tự nhiên song ngữ Việt - Anh. Chọn môn học để bắt đầu ngay!
+        </p>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Subjects -->
+        <div class="section-title">Chọn môn học</div>
+
+        <div class="subjects-grid">
+            <!-- Math -->
+            <a href="{{ url_for('math_tutor') }}" class="subject-card math">
+                <span class="subject-icon">🧮</span>
+                <h3 class="subject-name">Toán học</h3>
+                <p class="subject-name-en">Mathematics</p>
+                <p class="subject-desc">Đại số, Hình học, Số học và các phép tính</p>
+            </a>
+
+            <!-- Physics -->
+            <a href="{{ url_for('physics_tutor') }}" class="subject-card physics">
+                <span class="subject-icon">⚡</span>
+                <h3 class="subject-name">Vật lý</h3>
+                <p class="subject-name-en">Physics</p>
+                <p class="subject-desc">Cơ học, Nhiệt học, Điện học và Quang học</p>
+            </a>
+
+            <!-- Chemistry -->
+            <a href="{{ url_for('chemistry_tutor') }}" class="subject-card chemistry">
+                <span class="subject-icon">⚗️</span>
+                <h3 class="subject-name">Hóa học</h3>
+                <p class="subject-name-en">Chemistry</p>
+                <p class="subject-desc">Chất, Nguyên tử, Phản ứng và Bảng tuần hoàn</p>
+            </a>
+
+            <!-- Biology -->
+            <a href="{{ url_for('biology_tutor') }}" class="subject-card biology">
+                <span class="subject-icon">🌿</span>
+                <h3 class="subject-name">Sinh học</h3>
+                <p class="subject-name-en">Biology</p>
+                <p class="subject-desc">Tế bào, Di truyền, Sinh thái và Sự sống</p>
+            </a>
+        </div>
+
+        <!-- Games Banner -->
+        <div class="games-cta">
+            <div class="games-cta-content">
+                <h3>Vừa học vừa chơi!</h3>
+                <p>Khám phá kho tàng trò chơi giáo dục Scratch tương tác giúp việc học KHTN trở nên thú vị hơn bao giờ
+                    hết.</p>
+                <a href="{{ url_for('games') }}" class="game-btn">Khám phá Trò chơi 🚀</a>
+            </div>
+            <div class="cta-decoration">🎮</div>
+        </div>
+    </div>
+</body>
+
+</html>
