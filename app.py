@@ -23,7 +23,7 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 
-GENERATION_MODEL = 'gemma-3-12b-it'
+GENERATION_MODEL = 'gemma-3-4b-it'
 EMBEDDING_MODEL = 'text-embedding-004'
 
 app = Flask(__name__)
