@@ -1,0 +1,35 @@
+MÔ TẢ TỔNG QUAN Ý TƯỞNG PHẦN MỀM: KHTN SONG NGỮ
+Dự án tham dự: Cuộc Thi Sáng Tạo Với AI Trong Giáo Dục – Năm học 2025-2026
+
+1. TÊN DỰ ÁN: KHTN Song Ngữ - Hệ thống gia sư AI thông minh tối ưu năng lực tự học.
+
+2. Ý TƯỞNG CỐT LÕI:
+Phát triển một "Gia sư ảo" chuyên biệt cho các môn Khoa học Tự nhiên (Toán, Lý, Hóa, Sinh) có khả năng thấu hiểu và thích ứng hoàn toàn với trình độ riêng biệt của từng học sinh. Ý tưởng trọng tâm là biến AI từ một công cụ tra cứu thụ động thành một người dẫn đường chủ động, kích thích sự tự chủ trong học tập của học sinh.
+
+3. CÁC ĐIỂM NHẤN CHIẾN LƯỢC:
+
+a. Học sinh tự chủ động học tập theo năng lực cá nhân:
+Phần mềm tạo ra môi trường học tập không áp lực, nơi học sinh có thể tự do đặt câu hỏi về bất kỳ khái niệm khoa học nào. AI không chỉ đưa ra đáp án mà đóng vai trò hướng dẫn, gợi mở vấn đề theo từng bước (step-by-step), giúp học sinh tự tư duy và tìm ra câu trả lời cho chính mình thay vì nhận lời giải có sẵn.
+
+b. Cơ chế Adaptive Learning (AI tự động điều chỉnh theo năng lực):
+Đây là điểm đột phá của phần mềm. Cứ sau mỗi 10 câu hỏi, hệ thống AI sẽ tự động phân tích lịch sử hội thoại để đánh giá lại năng lực của học sinh (Giỏi - Khá - Trung bình - Yếu). Dựa trên kết quả này, AI sẽ tự động thay đổi:
+- Độ khó của từ vựng tiếng Anh học thuật.
+- Cách diễn giải khái niệm (đơn giản hóa cho HS yếu, nâng cao chuyên sâu cho HS giỏi).
+- Phương pháp sư phạm thích hợp (nhấn mạnh hiện tượng cho Lý, logic cho Toán, cơ chế cho Hóa/Sinh).
+
+c. Hỗ trợ tối ưu cho học sinh "prompt" chưa tốt:
+Thông thường, để AI trả lời hay, người dùng cần có kỹ năng viết câu lệnh (prompt) phức tạp. Tuy nhiên, phần mềm của chúng tôi giải quyết vấn đề này bằng cách tích hợp "Prompt Engineering" ngầm. Hệ thống tự động bù đắp các thiếu khuyết trong câu hỏi của học sinh:
+- Nếu học sinh hỏi ngắn, thiếu ngữ cảnh, AI sẽ dựa vào công nghệ RAG (truy xuất từ kho PDF tài liệu chính thống của giáo viên) và lịch sử trò chuyện để tự hiểu con đang gặp khó khăn ở đâu.
+- AI chủ động dẫn dắt, đặt câu hỏi ngược lại để xác định rõ yêu cầu, giúp những học sinh dù kỹ năng đặt câu hỏi còn yếu vẫn nhận được sự hỗ trợ chất lượng cao như chuyên gia.
+
+4. GIÁ TRỊ GIÁO DỤC:
+- Xóa bỏ rào cản về kỹ năng sử dụng công nghệ: Học sinh chỉ cần hỏi tự nhiên nhất, AI sẽ làm phần việc kỹ thuật khó khăn còn lại.
+- Hình thành thói quen tự học tự chủ: Khi nội dung luôn vừa sức (do AI đã điều chỉnh), học sinh sẽ cảm thấy hứng thú và tự tin hơn trong việc khám phá kiến thức mới.
+- Song ngữ tự nhiên: Học sinh được tiếp cận thuật ngữ khoa học Anh - Việt một cách thẩm thấu, chuẩn bị nền tảng vững chắc cho các cấp học cao hơn.
+
+5. KẾT LUẬN:
+"KHTN Song Ngữ" không chỉ là một phần mềm giải bài tập, mà là một hệ sinh thái học tập thông minh, nơi AI thấu hiểu học sinh hơn cả một giáo viên truyền thống có thể làm cho hàng chục em trong lớp. Phần mềm chính là cánh cửa đưa học sinh đến với phương thức học tập chủ động của thế kỷ 21.
+
+---
+© 2026 Nhóm phát triển KHTN Song Ngữ
+Trường THCS Trung Thành – Tuyên Quang

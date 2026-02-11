@@ -1,130 +1,82 @@
-# 🎓 Ứng dụng Học tập KHTN Song ngữ với AI
+# KHTN SONG NGỮ - HỆ THỐNG GIA SƯ AI THÔNG MINH (AI EDUCATION PLATFORM)
 
-Ứng dụng hỗ trợ học sinh học tập các môn Khoa học Tự nhiên (Toán, Lý, Hóa, Sinh) bằng tiếng Việt và tiếng Anh với sự hỗ trợ của AI Gemma-3-12B-IT.
+**Dự án tham dự:** Cuộc Thi Sáng Tạo Với AI Trong Giáo Dục – Năm học 2025 - 2026  
+**Đơn vị:** Trường THCS Trung Thành – Linh Hồ, Tuyên Quang  
+**Tác giả:** Nhóm phát triển KHTN Song Ngữ (Lê Quang Phúc - Trưởng nhóm)
 
-## ✨ Tính năng
+---
 
-- 🤖 **AI Tutor chuyên môn**: Giáo viên AI riêng cho từng môn học
-  - Toán học (Mathematics)
-  - Vật lý (Physics)
-  - Hóa học (Chemistry)
-  - Sinh học (Biology)
+## 1. GIỚI THIỆU TỔNG QUAN (EXECUTIVE SUMMARY)
 
-- 🎮 **Trò chơi Scratch tương tác**: 21 trò chơi giáo dục
-  - 5 trò chơi Toán học
-  - 5 trò chơi Vật lý
-  - 5 trò chơi Hóa học
-  - 6 trò chơi Sinh học
+Trong kỷ nguyên chuyển đổi số, việc ứng dụng trí tuệ nhân tạo (AI) vào giáo dục không chỉ là xu thế mà còn là giải pháp đột phá để cá nhân hóa việc học. Dự án **"KHTN Song Ngữ"** là một nền tảng học tập tiên tiến, tích hợp mô hình ngôn ngữ lớn (LLM) để hỗ trợ học sinh học tập các môn Khoa học Tự nhiên (Toán, Lý, Hóa, Sinh) bằng cả hai ngôn ngữ Việt - Anh. Hệ thống đóng vai trò như một gia sư ảo 24/7, giúp xóa tan rào cản ngôn ngữ và kiến thức khoa học khó nhằn.
 
-- 🌐 **Song ngữ Việt - Anh**: Mọi giải thích đều có cả tiếng Việt và tiếng Anh
+## 2. NHỮNG ĐIỂM ĐỘT PHÁ (INNOVATIVE FEATURES)
 
-- 📊 **Đánh giá năng lực**: Hệ thống tự động đánh giá trình độ học sinh
+### 🚀 Cá Nhân Hóa Với RAG (Retrieval-Augmented Generation)
+Hệ thống không chỉ trả lời dựa trên tri thức có sẵn của AI mà còn được "nạp" thêm kiến thức từ kho học liệu chính thống (PDF) do giáo viên cung cấp. Điều này đảm bảo:
+- Thông tin chính xác, bám sát chương trình học.
+- Trả lời có dẫn nguồn tài liệu cụ thể.
 
-- 📚 **RAG (Retrieval-Augmented Generation)**: Tìm kiếm thông tin từ tài liệu PDF
+### 🧠 Đánh Giá Năng Lực Tự Động
+Hệ thống tự động phân tích 10 câu hỏi gần nhất của học sinh để đánh giá trình độ (Giỏi - Khá - Trung bình - Yếu). Qua đó, AI sẽ:
+- Điều chỉnh cách dùng thuật ngữ và độ khó câu trả lời.
+- Cung cấp báo cáo chi tiết cho giáo viên quản lý về tiến độ của từng học sinh.
 
-## 🚀 Cài đặt
+### 🇻🇳🇬🇧 Tư Duy Song Ngữ (Bilingual Literacy)
+Mỗi tương tác của AI đều được cấu trúc 3 phần:
+1. **Tiếng Việt:** Giải thích chi tiết khái niệm.
+2. **English Version:** Phiên bản tiếng Anh học thuật tương đương.
+3. **Key Vocabulary:** Hệ thống hóa các thuật ngữ khoa học song ngữ.
 
-### 1. Clone repository
+### 🎮 Gamification (Vừa học vừa chơi)
+Tích hợp kho trò chơi Scratch tương tác theo từng môn học, giúp học sinh củng cố kiến thức một cách thú vị, tránh gây áp lực học tập.
 
-```bash
-git clone <repository-url>
-cd AI-Hoc-Tap-KHTN-Song-Ngu
-```
+---
 
-### 2. Cài đặt dependencies
+## 3. CÔNG NGHỆ SỬ DỤNG (TECHNICAL STACK)
 
-```bash
-pip install -r requirements.txt
-```
+- **AI Model:** `Gemma-3-12B-IT` (Mô hình ngôn ngữ lớn tối ưu cho giáo dục).
+- **Embeddings:** `Text-embedding-004` (Xử lý truy xuất ngữ cảnh chính xác).
+- **Backend:** Flask (Python) - Xử lý logic và hệ thống RAG.
+- **Database:** SQLAlchemy - Quản lý tài khoản và lịch sử học tập.
+- **Frontend:** HTML5, Tailwind CSS, Font Awesome - Giao diện hiện đại, responsive.
+- **Math Engine:** MathJax (Hiển thị công thức toán học/hóa học chuẩn xác).
 
-### 3. Cấu hình môi trường
+---
 
-Sao chép file `.env.example` thành `.env` và điền thông tin:
+## 4. Ý NGHĨA GIÁO DỤC (EDUCATIONAL IMPACT)
 
-```bash
-cp .env.example .env
-```
+1. **Hỗ trợ tự học:** Học sinh có thể chủ động tìm hiểu kiến thức mọi lúc mọi nơi.
+2. **Phát triển ngoại ngữ:** Giúp học sinh làm quen với thuật ngữ khoa học bằng tiếng Anh, chuẩn bị hành trang hội nhập quốc tế.
+3. **Số hóa học liệu:** Giúp giáo viên quản lý và phân tích năng lực học sinh qua dữ liệu trực quan từ Admin Panel.
+4. **Công bằng giáo dục:** Tiếp cận gia sư chất lượng cao cho mọi học sinh, không phân biệt vùng miền.
 
-Chỉnh sửa file `.env`:
+---
 
-```env
-GEMINI_API_KEY=your_actual_api_key_here
-FLASK_SECRET_KEY=your_generated_secret_key_here
-DATABASE_URL=postgresql://username:password@localhost:5432/khtn_db
-```
+## 5. HƯỚNG DẪN CÀI ĐẶT & SỬ DỤNG
 
-#### Lấy Gemini API Key:
-1. Truy cập: https://aistudio.google.com/app/apikey
-2. Đăng nhập với Google Account
-3. Tạo API key mới
-4. Copy và paste vào file `.env`
+### Cài đặt môi trường
+1. Clone dự án về máy.
+2. Cài đặt các thư viện cần thiết:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Cấu hình file `.env` với `GEMINI_API_KEY` của bạn.
 
-#### Tạo Flask Secret Key:
-```bash
-python -c "import secrets; print(secrets.token_hex(32))"
-```
-
-### 4. Thiết lập Database
-
-Tạo database PostgreSQL:
-
-```bash
-createdb khtn_db
-```
-
-Hoặc sử dụng pgAdmin để tạo database mới.
-
-### 5. Chạy ứng dụng
-
+### Khởi chạy
 ```bash
 python app.py
 ```
+Truy cập: `http://127.0.0.1:5000`
 
-Ứng dụng sẽ chạy tại: http://localhost:5000
+---
 
-## 📁 Cấu trúc thư mục
+## 6. ĐỘI NGŨ THỰC HIỆN
 
-```
-AI-Hoc-Tap-KHTN-Song-Ngu/
-├── app.py                 # Flask application chính
-├── requirements.txt       # Python dependencies
-├── .env                   # Biến môi trường (không commit)
-├── .env.example          # Template cho .env
-├── Procfile              # Cấu hình deploy
-├── static/               # Thư mục chứa PDF cho RAG
-├── templates/            # HTML templates
-│   ├── home.html         # Trang chủ
-│   ├── math_tutor.html   # AI Toán học
-│   ├── physics_tutor.html # AI Vật lý
-│   ├── chemistry_tutor.html # AI Hóa học
-│   ├── biology_tutor.html # AI Sinh học
-│   ├── games.html        # Trang chọn trò chơi
-│   ├── math_games.html   # Trò chơi Toán
-│   ├── physics_games.html # Trò chơi Vật lý
-│   ├── chemistry_games.html # Trò chơi Hóa học
-│   ├── biology_games.html # Trò chơi Sinh học
-│   ├── login.html        # Đăng nhập
-│   ├── register.html     # Đăng ký
-│   ├── admin.html        # Quản trị
-│   └── admin_login.html  # Đăng nhập admin
-└── flask_session/        # Session storage
-```
+- **Lê Quang Phúc:** Trưởng nhóm - Kiến trúc hệ thống & AI logic.
+- **Phùng Văn Hạnh:** Xây dựng cơ sở dữ liệu & Nội dung học liệu.
+- **Hoàng Thị Nha:** Thiết kế giao diện (UI/UX) & Trò chơi Scratch.
+- **Nguyễn Thị Thương:** Biên tập nội dung song ngữ & Kiểm thử.
 
-## 🎨 Công nghệ sử dụng
-
-- **Backend**: Flask (Python)
-- **AI Model**: Google Gemma-3-12B-IT
-- **Database**: PostgreSQL
-- **Frontend**: HTML, CSS (Vanilla), JavaScript
-- **Math Rendering**: MathJax
-- **Games**: Scratch (embedded iframes)
-
-## 👨‍🏫 Tác giả
-
-**Giáo viên Lê Quang Phúc**  
-Trường THCS Trung Thành – Linh Hồ – Tuyên Quang  
-📧 lequangphuctq81@gmail.com
-
-## 📝 License
-
-© 2024-2026 Trường THCS Trung Thành – Linh Hồ – Tuyên Quang
+---
+**© 2026 KHTN Song Ngữ** - *Phát triển vì một nền giáo dục thông minh và toàn cầu.*

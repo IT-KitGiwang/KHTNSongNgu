@@ -6,6 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Học tập KHTN Song ngữ - Teacher AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1e40af',
+                    },
+                },
+            },
+        }
+    </script>
     <style>
         :root {
             --primary-blue: #2563eb;
@@ -347,6 +360,178 @@
                 display: none;
             }
         }
+
+        /* Footer Styles */
+        .site-footer {
+            background-color: #0f172a;
+            border-top: 1px solid #1e293b;
+            color: #cbd5e1;
+            padding: 60px 0;
+            margin-top: auto;
+        }
+
+        .site-footer .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+            text-align: left;
+            max-width: 1200px;
+            padding: 0 24px;
+        }
+
+        .footer-title {
+            color: white;
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--primary-blue);
+            display: inline-block;
+            padding-bottom: 6px;
+        }
+
+        .team-list {
+            list-style: none;
+        }
+
+        .team-member {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .member-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(30, 58, 138, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            flex-shrink: 0;
+        }
+
+        .member-role {
+            font-size: 0.7rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .member-name {
+            color: white;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .competition-card {
+            background: linear-gradient(135deg, rgba(30, 58, 138, 0.2), #0f172a);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .competition-title {
+            font-size: 1.4rem;
+            font-weight: 900;
+            background: linear-gradient(to right, #fff, #bfdbfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            line-height: 1.2;
+        }
+
+        .competition-sub {
+            color: #60a5fa;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.1em;
+            margin-bottom: 20px;
+        }
+
+        .year-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(37, 99, 235, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #93c5fd;
+            padding: 8px 20px;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .contact-info {
+            text-align: right;
+        }
+
+        .contact-info p {
+            color: #cbd5e1;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .contact-email {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #1e293b;
+            padding: 10px 20px;
+            border-radius: 10px;
+            color: #cbd5e1;
+            text-decoration: none;
+            border: 1px solid #334155;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .contact-email:hover {
+            color: white;
+            border-color: #64748b;
+            background: #334155;
+        }
+
+        .copyright {
+            border-top: 1px solid #1e293b;
+            background: #0f172a;
+            padding: 20px 0;
+            text-align: center;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 768px) {
+            .site-footer .container {
+                text-align: center;
+                gap: 30px;
+            }
+
+            .contact-info {
+                text-align: center;
+            }
+
+            .team-member {
+                justify-content: center;
+                text-align: left;
+            }
+
+            .footer-title {
+                margin-bottom: 15px;
+            }
+        }
     </style>
 </head>
 
@@ -354,7 +539,7 @@
     <!-- Navbar -->
     <nav class="navbar">
         <a href="{{ url_for('home') }}" class="logo">
-            <span class="logo-icon">🎓</span>
+            <span class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></span>
             <div class="logo-text">
                 <h1>KHTN Song ngữ</h1>
                 <span>AI Education Platform</span>
@@ -362,7 +547,7 @@
         </a>
         <div class="nav-actions">
             <a href="{{ url_for('games') }}" class="btn-games">
-                <span>🎮</span> Giải trí
+                <span><i class="fa-solid fa-gamepad"></i></span> Giải trí
             </a>
             <a href="{{ url_for('logout') }}" class="btn-logout">Đăng xuất</a>
         </div>
@@ -381,63 +566,159 @@
         {% endwith %}
     </div>
 
-    <!-- Hero -->
-    <header class="hero">
-        <h2>Học cùng Giáo viên AI</h2>
-        <p>Hệ thống gia sư thông minh hỗ trợ 4 môn Khoa học Tự nhiên song ngữ Việt - Anh. Chọn môn học để bắt đầu ngay!
-        </p>
-    </header>
+    <!-- Main Content Grid -->
+    <div class="dashboard-container">
+        <!-- AI Section -->
+        <div class="ai-main">
+            <div class="section-title">Học cùng Giáo viên AI</div>
+            <div class="subjects-grid">
+                <!-- Math -->
+                <a href="{{ url_for('math_tutor') }}" class="subject-card math">
+                    <span class="subject-icon"><i class="fa-solid fa-calculator"></i></span>
+                    <h3 class="subject-name">Toán học</h3>
+                    <p class="subject-name-en">Mathematics</p>
+                    <p class="subject-desc">Đại số, Hình học và các phép tính</p>
+                </a>
 
-    <!-- Main Content -->
-    <div class="container">
-        <!-- Subjects -->
-        <div class="section-title">Chọn môn học</div>
+                <!-- Physics -->
+                <a href="{{ url_for('physics_tutor') }}" class="subject-card physics">
+                    <span class="subject-icon"><i class="fa-solid fa-bolt"></i></span>
+                    <h3 class="subject-name">Vật lý</h3>
+                    <p class="subject-name-en">Physics</p>
+                    <p class="subject-desc">Cơ học, Điện và Quang học</p>
+                </a>
 
-        <div class="subjects-grid">
-            <!-- Math -->
-            <a href="{{ url_for('math_tutor') }}" class="subject-card math">
-                <span class="subject-icon">🧮</span>
-                <h3 class="subject-name">Toán học</h3>
-                <p class="subject-name-en">Mathematics</p>
-                <p class="subject-desc">Đại số, Hình học, Số học và các phép tính</p>
-            </a>
+                <!-- Chemistry -->
+                <a href="{{ url_for('chemistry_tutor') }}" class="subject-card chemistry">
+                    <span class="subject-icon"><i class="fa-solid fa-flask"></i></span>
+                    <h3 class="subject-name">Hóa học</h3>
+                    <p class="subject-name-en">Chemistry</p>
+                    <p class="subject-desc">Nguyên tử và Phản ứng hóa học</p>
+                </a>
 
-            <!-- Physics -->
-            <a href="{{ url_for('physics_tutor') }}" class="subject-card physics">
-                <span class="subject-icon">⚡</span>
-                <h3 class="subject-name">Vật lý</h3>
-                <p class="subject-name-en">Physics</p>
-                <p class="subject-desc">Cơ học, Nhiệt học, Điện học và Quang học</p>
-            </a>
-
-            <!-- Chemistry -->
-            <a href="{{ url_for('chemistry_tutor') }}" class="subject-card chemistry">
-                <span class="subject-icon">⚗️</span>
-                <h3 class="subject-name">Hóa học</h3>
-                <p class="subject-name-en">Chemistry</p>
-                <p class="subject-desc">Chất, Nguyên tử, Phản ứng và Bảng tuần hoàn</p>
-            </a>
-
-            <!-- Biology -->
-            <a href="{{ url_for('biology_tutor') }}" class="subject-card biology">
-                <span class="subject-icon">🌿</span>
-                <h3 class="subject-name">Sinh học</h3>
-                <p class="subject-name-en">Biology</p>
-                <p class="subject-desc">Tế bào, Di truyền, Sinh thái và Sự sống</p>
-            </a>
+                <!-- Biology -->
+                <a href="{{ url_for('biology_tutor') }}" class="subject-card biology">
+                    <span class="subject-icon"><i class="fa-solid fa-dna"></i></span>
+                    <h3 class="subject-name">Sinh học</h3>
+                    <p class="subject-name-en">Biology</p>
+                    <p class="subject-desc">Tế bào và Di truyền học</p>
+                </a>
+            </div>
         </div>
 
-        <!-- Games Banner -->
-        <div class="games-cta">
-            <div class="games-cta-content">
+        <!-- Games Sidebar -->
+        <div class="games-aside">
+            <div class="section-title">Giải trí khoa học</div>
+            <div class="sidebar-game-card">
                 <h3>Vừa học vừa chơi!</h3>
-                <p>Khám phá kho tàng trò chơi giáo dục Scratch tương tác giúp việc học KHTN trở nên thú vị hơn bao giờ
-                    hết.</p>
-                <a href="{{ url_for('games') }}" class="game-btn">Khám phá Trò chơi 🚀</a>
+                <p>Khám phá kho tàng trò chơi Scratch tương tác hấp dẫn giúp tiếp thu tri thức dễ dàng hơn.</p>
+                <a href="{{ url_for('games') }}" class="game-launch-btn">
+                    <i class="fa-solid fa-rocket"></i> Khám phá Game
+                </a>
             </div>
-            <div class="cta-decoration">🎮</div>
         </div>
     </div>
-</body>
+
+    <!-- Professional Footer -->
+    <footer class="bg-slate-900 border-t border-slate-800 text-slate-300 py-12 mt-auto">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+
+                <!-- Team Members -->
+                <div class="text-center md:text-left">
+                    <h3 class="text-white text-lg font-bold mb-4 border-b-2 border-primary-blue inline-block pb-1">
+                        👥 Đội Ngũ Thực Hiện
+                    </h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-center justify-center md:justify-start gap-3 group">
+                            <span
+                                class="w-8 h-8 rounded-full bg-blue-900/50 flex items-center justify-center text-blue-400 font-bold text-xs ring-1 ring-blue-500/30 group-hover:bg-blue-600 group-hover:text-white transition-all">TL</span>
+                            <div>
+                                <span class="text-xs text-slate-500 uppercase tracking-wider block">Trưởng nhóm</span>
+                                <span class="text-white font-medium group-hover:text-primary-blue transition-colors">Lê
+                                    Quang Phúc</span>
+                            </div>
+                        </li>
+                        <li class="flex items-center justify-center md:justify-start gap-3 group">
+                            <span
+                                class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 font-bold text-xs ring-1 ring-slate-700 group-hover:bg-emerald-600 group-hover:text-white transition-all">01</span>
+                            <div>
+                                <span class="text-xs text-slate-500 uppercase tracking-wider block">Thành viên</span>
+                                <span class="text-slate-200 group-hover:text-emerald-400 transition-colors">Phùng Văn
+                                    Hạnh</span>
+                            </div>
+                        </li>
+                        <li class="flex items-center justify-center md:justify-start gap-3 group">
+                            <span
+                                class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 font-bold text-xs ring-1 ring-slate-700 group-hover:bg-purple-600 group-hover:text-white transition-all">02</span>
+                            <div>
+                                <span class="text-xs text-slate-500 uppercase tracking-wider block">Thành viên</span>
+                                <span class="text-slate-200 group-hover:text-purple-400 transition-colors">Hoàng Thị
+                                    Nha</span>
+                            </div>
+                        </li>
+                        <li class="flex items-center justify-center md:justify-start gap-3 group">
+                            <span
+                                class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 font-bold text-xs ring-1 ring-slate-700 group-hover:bg-pink-600 group-hover:text-white transition-all">03</span>
+                            <div>
+                                <span class="text-xs text-slate-500 uppercase tracking-wider block">Thành viên</span>
+                                <span class="text-slate-200 group-hover:text-pink-400 transition-colors">Nguyễn Thị
+                                    Thương</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Competition Info -->
+                <div class="text-center flex flex-col items-center justify-center">
+                    <div
+                        class="bg-gradient-to-br from-blue-900/40 to-slate-900 p-6 rounded-2xl border border-blue-500/20 shadow-lg relative overflow-hidden group hover:border-blue-500/40 transition-all duration-500">
+                        <div
+                            class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50">
+                        </div>
+
+                        <h3
+                            class="text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-200 mb-2 uppercase tracking-tight">
+                            Cuộc Thi Sáng Tạo
+                        </h3>
+                        <p class="text-blue-400 font-bold uppercase tracking-widest text-sm mb-4">Với AI Trong Giáo Dục
+                        </p>
+
+                        <div
+                            class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-600/20 border border-blue-500/30 text-blue-300 text-sm font-semibold">
+                            <span>📅</span> Năm học 2025 - 2026
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact / Additional Info -->
+                <div class="text-center md:text-right flex flex-col items-center md:items-end justify-center">
+                    <h3 class="text-white text-lg font-bold mb-4 border-b-2 border-primary-blue inline-block pb-1">
+                        🏫 Đơn Vị Công Tác
+                    </h3>
+                    <p class="text-slate-300 mb-2 font-medium">Trường THCS Trung Thành</p>
+                    <p class="text-slate-400 text-sm mb-4">Linh Hồ – Tuyên Quang</p>
+
+                    <a href="mailto:lequangphuctq81@gmail.com"
+                        class="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors bg-slate-800 px-4 py-2 rounded-lg border border-slate-700 hover:border-slate-500">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                        <span class="text-sm">lequangphuctq81@gmail.com</span>
+                    </a>
+                </div>
+
+            </div>
+
+            <!-- Copyright -->
+            <div class="border-t border-slate-800 mt-10 pt-6 text-center">
+                <p class="text-slate-500 text-xs sm:text-sm">
+                    © 2026 KHTN Song Ngữ — Phát triển vì tương lai học tập thông minh.
+                </p>
+            </div>
+        </div>
+    </footer>
 
 </html>
