@@ -651,56 +651,53 @@
                     <tr>
                         <td>
                             <div class="student-info">
-                                <div class="student-avatar">{{ user.name[0] | upper }}</div>
+                                <div class="student-avatar">{{ user.tenhocsinh[0] | upper }}</div>
                                 <div>
-                                    <div class="student-name">{{ user.name }}</div>
-                                    <div class="student-username">@{{ user.username }}</div>
+                                    <div class="student-name">{{ user.tenhocsinh }}</div>
+                                    <div class="student-username">@{{ user.tendangnhap }}</div>
                                 </div>
                             </div>
                         </td>
                         <td>
-                            <span class="level-badge level-{{ user.level_math | lower }}" title="{{ user.lydo_math }}">
-                                {% if user.level_math == 'Gioi' %}⭐{% elif user.level_math == 'Kha' %}✨{% elif
-                                user.level_math == 'TB' %}📚{% else %}📖{% endif %}
-                                {{ user.level_math }}
+                            <span class="level-badge level-{{ user.nangluctoan | lower }}" title="{{ user.lydotoan }}">
+                                {% if user.nangluctoan == 'Gioi' %}⭐{% elif user.nangluctoan == 'Kha' %}✨{% elif
+                                user.nangluctoan == 'TB' %}📚{% else %}📖{% endif %}
+                                {{ user.nangluctoan }}
                             </span>
-                            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px;">{{ user.count_math }} câu
+                            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px;">{{ user.socautoan }} câu
                             </div>
                         </td>
                         <td>
-                            <span class="level-badge level-{{ user.level_physics | lower }}"
-                                title="{{ user.lydo_physics }}">
-                                {% if user.level_physics == 'Gioi' %}⭐{% elif user.level_physics == 'Kha' %}✨{% elif
-                                user.level_physics == 'TB' %}📚{% else %}📖{% endif %}
-                                {{ user.level_physics }}
+                            <span class="level-badge level-{{ user.nanglucly | lower }}" title="{{ user.lydoly }}">
+                                {% if user.nanglucly == 'Gioi' %}⭐{% elif user.nanglucly == 'Kha' %}✨{% elif
+                                user.nanglucly == 'TB' %}📚{% else %}📖{% endif %}
+                                {{ user.nanglucly }}
                             </span>
-                            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px;">{{ user.count_physics }}
+                            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px;">{{ user.socauly }}
                                 câu</div>
                         </td>
                         <td>
-                            <span class="level-badge level-{{ user.level_chemistry | lower }}"
-                                title="{{ user.lydo_chemistry }}">
-                                {% if user.level_chemistry == 'Gioi' %}⭐{% elif user.level_chemistry == 'Kha' %}✨{% elif
-                                user.level_chemistry == 'TB' %}📚{% else %}📖{% endif %}
-                                {{ user.level_chemistry }}
+                            <span class="level-badge level-{{ user.nangluchoa | lower }}" title="{{ user.lydohoa }}">
+                                {% if user.nangluchoa == 'Gioi' %}⭐{% elif user.nangluchoa == 'Kha' %}✨{% elif
+                                user.nangluchoa == 'TB' %}📚{% else %}📖{% endif %}
+                                {{ user.nangluchoa }}
                             </span>
-                            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px;">{{ user.count_chemistry }}
+                            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px;">{{ user.socauhoa }}
                                 câu</div>
                         </td>
                         <td>
-                            <span class="level-badge level-{{ user.level_biology | lower }}"
-                                title="{{ user.lydo_biology }}">
-                                {% if user.level_biology == 'Gioi' %}⭐{% elif user.level_biology == 'Kha' %}✨{% elif
-                                user.level_biology == 'TB' %}📚{% else %}📖{% endif %}
-                                {{ user.level_biology }}
+                            <span class="level-badge level-{{ user.nanglucsinh | lower }}" title="{{ user.lydosinh }}">
+                                {% if user.nanglucsinh == 'Gioi' %}⭐{% elif user.nanglucsinh == 'Kha' %}✨{% elif
+                                user.nanglucsinh == 'TB' %}📚{% else %}📖{% endif %}
+                                {{ user.nanglucsinh }}
                             </span>
-                            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px;">{{ user.count_biology }}
+                            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px;">{{ user.socausinh }}
                                 câu</div>
                         </td>
                         <td>
                             <div class="question-count">
                                 <i class="fa-solid fa-message"></i>
-                                <strong>{{ user.total_questions }}</strong> câu
+                                <strong>{{ user.tongsocau }}</strong> câu
                             </div>
                         </td>
                     </tr>

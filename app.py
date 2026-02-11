@@ -43,47 +43,47 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # Giới hạn 16MB
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-class User(db.Model):
-    __tablename__ = 'taikhoan_hocsinh'
+class NguoiDung(db.Model):
+    __tablename__ = 'taikhoanhocsinh'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    password = db.Column(db.String(255), nullable=False)
-    name = db.Column(db.Text, default='')
+    tendangnhap = db.Column(db.String(80), unique=True, nullable=False)
+    matkhau = db.Column(db.String(255), nullable=False)
+    tenhocsinh = db.Column(db.Text, default='')
     
     # Legacy columns (kept for backward compatibility)
-    level = db.Column(db.String(20), default='TB')
-    history = db.Column(db.Text, default='')
+    nangluc = db.Column(db.String(20), default='TB')
+    lichsu = db.Column(db.Text, default='')
     lydo = db.Column(db.Text, default='')
     
-    # Subject-specific chat histories
-    history_math = db.Column(db.Text, default='')
-    history_physics = db.Column(db.Text, default='')
-    history_chemistry = db.Column(db.Text, default='')
-    history_biology = db.Column(db.Text, default='')
+    # Subject-specific chat lichsu
+    lichsutoan = db.Column(db.Text, default='')
+    lichsuly = db.Column(db.Text, default='')
+    lichsuhoa = db.Column(db.Text, default='')
+    lichsusinh = db.Column(db.Text, default='')
     
     # Subject-specific proficiency levels
-    level_math = db.Column(db.String(20), default='TB')
-    level_physics = db.Column(db.String(20), default='TB')
-    level_chemistry = db.Column(db.String(20), default='TB')
-    level_biology = db.Column(db.String(20), default='TB')
+    nangluctoan = db.Column(db.String(20), default='TB')
+    nanglucly = db.Column(db.String(20), default='TB')
+    nangluchoa = db.Column(db.String(20), default='TB')
+    nanglucsinh = db.Column(db.String(20), default='TB')
     
     # Subject-specific assessment reasons
-    lydo_math = db.Column(db.Text, default='')
-    lydo_physics = db.Column(db.Text, default='')
-    lydo_chemistry = db.Column(db.Text, default='')
-    lydo_biology = db.Column(db.Text, default='')
+    lydotoan = db.Column(db.Text, default='')
+    lydoly = db.Column(db.Text, default='')
+    lydohoa = db.Column(db.Text, default='')
+    lydosinh = db.Column(db.Text, default='')
     
     # Question counters for tracking when to assess
-    question_count_math = db.Column(db.Integer, default=0)
-    question_count_physics = db.Column(db.Integer, default=0)
-    question_count_chemistry = db.Column(db.Integer, default=0)
-    question_count_biology = db.Column(db.Integer, default=0)
+    socautoan = db.Column(db.Integer, default=0)
+    socauly = db.Column(db.Integer, default=0)
+    socauhoa = db.Column(db.Integer, default=0)
+    socausinh = db.Column(db.Integer, default=0)
 
 with app.app_context():
     # Đảm bảo schema public tồn tại
     db.session.execute(text('CREATE SCHEMA IF NOT EXISTS public;'))
     db.create_all()
-    print("✅ Đã kiểm tra/tạo bảng taikhoan_hocsinh trong schema public")
+    print("✅ Đã kiểm tra/tạo bảng taikhoanhocsinh trong schema public")
 
 # Biến toàn cục cho RAG
 RAG_DATA = {
@@ -379,50 +379,50 @@ highlight_terms = {
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        name = request.form.get('name', '').strip()  # LẤY TÊN HỌC SINH
-        if not username or not password:
+        tendangnhap = request.form.get('tendangnhap')
+        matkhau = request.form.get('matkhau')
+        tenhocsinh = request.form.get('tenhocsinh', '').strip()  # LẤY TÊN HỌC SINH
+        if not tendangnhap or not matkhau:
             flash('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.', 'error')
             return redirect(url_for('register'))
-        if not name:
+        if not tenhocsinh:
             flash('Vui lòng nhập tên học sinh.', 'error')
             return redirect(url_for('register'))
 
-        if User.query.filter_by(username=username).first():
+        if NguoiDung.query.filter_by(tendangnhap=tendangnhap).first():
             flash('Tên đăng nhập đã tồn tại.', 'error')
             return redirect(url_for('register'))
 
         try:
-            hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-            user = User(
-                username=username, 
-                password=hashed_password, 
-                name=name,
+            hashed_password = generate_password_hash(matkhau, method='pbkdf2:sha256')
+            user = NguoiDung(
+                tendangnhap=tendangnhap, 
+                matkhau=hashed_password, 
+                tenhocsinh=tenhocsinh,
                 # Legacy columns
-                level='TB',
-                history='',
+                nangluc='TB',
+                lichsu='',
                 lydo='',
-                # Subject-specific histories
-                history_math='',
-                history_physics='',
-                history_chemistry='',
-                history_biology='',
+                # Subject-specific lichsu
+                lichsutoan='',
+                lichsuly='',
+                lichsuhoa='',
+                lichsusinh='',
                 # Subject-specific levels
-                level_math='TB',
-                level_physics='TB',
-                level_chemistry='TB',
-                level_biology='TB',
+                nangluctoan='TB',
+                nanglucly='TB',
+                nangluchoa='TB',
+                nanglucsinh='TB',
                 # Subject-specific reasons
-                lydo_math='',
-                lydo_physics='',
-                lydo_chemistry='',
-                lydo_biology='',
+                lydotoan='',
+                lydoly='',
+                lydohoa='',
+                lydosinh='',
                 # Question counters
-                question_count_math=0,
-                question_count_physics=0,
-                question_count_chemistry=0,
-                question_count_biology=0
+                socautoan=0,
+                socauly=0,
+                socauhoa=0,
+                socausinh=0
             )
             db.session.add(user)
             db.session.commit()
@@ -438,13 +438,13 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        if not username or not password:
+        tendangnhap = request.form.get('tendangnhap')
+        matkhau = request.form.get('matkhau')
+        if not tendangnhap or not matkhau:
             flash('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.', 'error')
             return redirect(url_for('login'))
-        user = User.query.filter_by(username=username).first()
-        if user and check_password_hash(user.password, password):
+        user = NguoiDung.query.filter_by(tendangnhap=tendangnhap).first()
+        if user and check_password_hash(user.matkhau, matkhau):
             session['user_id'] = user.id
             flash('Đăng nhập thành công!', 'success')
             return redirect(url_for('index'))
@@ -548,35 +548,35 @@ def chat():
         return jsonify({'response': format_response('Con hãy nhập câu hỏi nhé!')})
 
     # Get user from database
-    user = db.session.get(User, session['user_id'])
+    user = db.session.get(NguoiDung, session['user_id'])
     if not user:
         return jsonify({'error': 'Người dùng không tồn tại'}), 401
 
     # Subject mapping to database columns
     subject_mapping = {
         'math': {
-            'history_col': 'history_math',
-            'level_col': 'level_math',
-            'lydo_col': 'lydo_math',
-            'counter_col': 'question_count_math'
+            'history_col': 'lichsutoan',
+            'level_col': 'nangluctoan',
+            'lydo_col': 'lydotoan',
+            'counter_col': 'socautoan'
         },
         'physics': {
-            'history_col': 'history_physics',
-            'level_col': 'level_physics',
-            'lydo_col': 'lydo_physics',
-            'counter_col': 'question_count_physics'
+            'history_col': 'lichsuly',
+            'level_col': 'nanglucly',
+            'lydo_col': 'lydoly',
+            'counter_col': 'socauly'
         },
         'chemistry': {
-            'history_col': 'history_chemistry',
-            'level_col': 'level_chemistry',
-            'lydo_col': 'lydo_chemistry',
-            'counter_col': 'question_count_chemistry'
+            'history_col': 'lichsuhoa',
+            'level_col': 'nangluchoa',
+            'lydo_col': 'lydohoa',
+            'counter_col': 'socauhoa'
         },
         'biology': {
-            'history_col': 'history_biology',
-            'level_col': 'level_biology',
-            'lydo_col': 'lydo_biology',
-            'counter_col': 'question_count_biology'
+            'history_col': 'lichsusinh',
+            'level_col': 'nanglucsinh',
+            'lydo_col': 'lydosinh',
+            'counter_col': 'socausinh'
         }
     }
 
@@ -726,7 +726,7 @@ def chat():
             new_level, lydo = evaluate_student_level(current_history)
             setattr(user, subject_data['level_col'], new_level)
             setattr(user, subject_data['lydo_col'], lydo)
-            print(f"✅ User {user.username} - {subject.upper()} level updated to {new_level} after {new_count} questions")
+            print(f"✅ User {user.tendangnhap} - {subject.upper()} level updated to {new_level} after {new_count} questions")
             print(f"   Reason: {lydo[:100]}...")
         
         # Commit all changes to database
@@ -742,11 +742,11 @@ def chat():
 def admin():
     if 'admin_session' not in session:
         if request.method == 'POST':
-            username = request.form.get('username')
-            password = request.form.get('password')
-            if username == 'lequangphuc':
-                user = User.query.filter_by(username=username).first()
-                if user and check_password_hash(user.password, password):
+            tendangnhap = request.form.get('tendangnhap')
+            matkhau = request.form.get('matkhau')
+            if tendangnhap == 'lequangphuc':
+                user = NguoiDung.query.filter_by(tendangnhap=tendangnhap).first()
+                if user and check_password_hash(user.matkhau, matkhau):
                     session['admin_session'] = True
                     flash('Đăng nhập admin thành công!', 'success')
                     return redirect(url_for('admin'))
@@ -757,42 +757,42 @@ def admin():
         return render_template('admin_login.html')
     
     # Lấy dữ liệu năng lực học sinh theo từng môn
-    taikhoan_hocsinh = User.query.all()
+    danhsachhocsinh = NguoiDung.query.all()
     user_data = []
-    for user in taikhoan_hocsinh:
+    for user in danhsachhocsinh:
         # Skip admin users
-        if user.username == 'lequangphuc':
+        if user.tendangnhap == 'lequangphuc':
             continue
         user_data.append({
             'id': user.id,
-            'username': user.username,
-            'name': user.name or "Chưa đặt tên",
+            'tendangnhap': user.tendangnhap,
+            'tenhocsinh': user.tenhocsinh or "Chưa đặt tên",
             # Subject-specific levels
-            'level_math': user.level_math or 'TB',
-            'level_physics': user.level_physics or 'TB',
-            'level_chemistry': user.level_chemistry or 'TB',
-            'level_biology': user.level_biology or 'TB',
+            'nangluctoan': user.nangluctoan or 'TB',
+            'nanglucly': user.nanglucly or 'TB',
+            'nangluchoa': user.nangluchoa or 'TB',
+            'nanglucsinh': user.nanglucsinh or 'TB',
             # Question counts
-            'count_math': user.question_count_math or 0,
-            'count_physics': user.question_count_physics or 0,
-            'count_chemistry': user.question_count_chemistry or 0,
-            'count_biology': user.question_count_biology or 0,
+            'socautoan': user.socautoan or 0,
+            'socauly': user.socauly or 0,
+            'socauhoa': user.socauhoa or 0,
+            'socausinh': user.socausinh or 0,
             # Total questions
-            'total_questions': (user.question_count_math or 0) + (user.question_count_physics or 0) + 
-                              (user.question_count_chemistry or 0) + (user.question_count_biology or 0),
+            'tongsocau': (user.socautoan or 0) + (user.socauly or 0) + 
+                              (user.socauhoa or 0) + (user.socausinh or 0),
             # Reasons (for detail view)
-            'lydo_math': user.lydo_math or '',
-            'lydo_physics': user.lydo_physics or '',
-            'lydo_chemistry': user.lydo_chemistry or '',
-            'lydo_biology': user.lydo_biology or ''
+            'lydotoan': user.lydotoan or '',
+            'lydoly': user.lydoly or '',
+            'lydohoa': user.lydohoa or '',
+            'lydosinh': user.lydosinh or ''
         })
     
     # Statistics
     stats = {
         'total_students': len(user_data),
-        'gioi_count': sum(1 for u in user_data if u['level_math'] == 'Gioi' or u['level_physics'] == 'Gioi' or u['level_chemistry'] == 'Gioi' or u['level_biology'] == 'Gioi'),
-        'kha_count': sum(1 for u in user_data if 'Kha' in [u['level_math'], u['level_physics'], u['level_chemistry'], u['level_biology']]),
-        'total_questions': sum(u['total_questions'] for u in user_data)
+        'gioi_count': sum(1 for u in user_data if u['nangluctoan'] == 'Gioi' or u['nanglucly'] == 'Gioi' or u['nangluchoa'] == 'Gioi' or u['nanglucsinh'] == 'Gioi'),
+        'kha_count': sum(1 for u in user_data if 'Kha' in [u['nangluctoan'], u['nanglucly'], u['nangluchoa'], u['nanglucsinh']]),
+        'total_questions': sum(u['tongsocau'] for u in user_data)
     }
     
     return render_template('admin.html', user_data=user_data, stats=stats)
@@ -822,16 +822,16 @@ def export_csv():
         flash('Bạn không có quyền truy cập.', 'error')
         return redirect(url_for('admin'))
     
-    taikhoan_hocsinh = User.query.all()
+    danhsachhocsinh = NguoiDung.query.all()
     user_data = []
-    for user in taikhoan_hocsinh:
+    for user in danhsachhocsinh:
         user_data.append({
             'ID': user.id,
-            'Tên đăng nhập': user.username,
-            'Tên học sinh': user.name or "Chưa đặt tên",  # THÊM CỘT TÊN
-            'Năng lực': user.level,
+            'Tên đăng nhập': user.tendangnhap,
+            'Tên học sinh': user.tenhocsinh or "Chưa đặt tên",  # THÊM CỘT TÊN
+            'Năng lực': user.nangluc,
             'Lý do': user.lydo,
-            'Lịch sử': user.history if user.history else 'Chưa có lịch sử'
+            'Lịch sử': user.lichsu if user.lichsu else 'Chưa có lịch sử'
         })
     
     df = pd.DataFrame(user_data)

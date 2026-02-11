@@ -163,15 +163,15 @@
       {% endwith %}
     </div>
 
-    <form method="POST" action="{{ url_for('admin_login') }}">
+    <form method="POST" action="{{ url_for('admin') }}">
       <div class="input-group">
-        <label for="username">Admin Username</label>
-        <input type="text" id="username" name="username" required>
+        <label for="tendangnhap">Tên đăng nhập Admin</label>
+        <input type="text" id="tendangnhap" name="tendangnhap" required>
       </div>
 
       <div class="input-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" required>
+        <label for="matkhau">Mật khẩu</label>
+        <input type="password" id="matkhau" name="matkhau" required>
       </div>
 
       <button type="submit" class="submit-btn">Truy cập Dashboard</button>
