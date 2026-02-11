@@ -566,56 +566,55 @@
         {% endwith %}
     </div>
 
-    <!-- Main Content Grid -->
-    <div class="dashboard-container">
-        <!-- AI Section -->
-        <div class="ai-main">
-            <div class="section-title">Học cùng Giáo viên AI</div>
-            <div class="subjects-grid">
-                <!-- Math -->
-                <a href="{{ url_for('math_tutor') }}" class="subject-card math">
-                    <span class="subject-icon"><i class="fa-solid fa-calculator"></i></span>
-                    <h3 class="subject-name">Toán học</h3>
-                    <p class="subject-name-en">Mathematics</p>
-                    <p class="subject-desc">Đại số, Hình học và các phép tính</p>
-                </a>
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Subjects -->
+        <div class="section-title">Chọn môn học</div>
 
-                <!-- Physics -->
-                <a href="{{ url_for('physics_tutor') }}" class="subject-card physics">
-                    <span class="subject-icon"><i class="fa-solid fa-bolt"></i></span>
-                    <h3 class="subject-name">Vật lý</h3>
-                    <p class="subject-name-en">Physics</p>
-                    <p class="subject-desc">Cơ học, Điện và Quang học</p>
-                </a>
+        <div class="subjects-grid">
+            <!-- Math -->
+            <a href="{{ url_for('math_tutor') }}" class="subject-card math">
+                <span class="subject-icon"><i class="fa-solid fa-calculator"></i></span>
+                <h3 class="subject-name">Toán học</h3>
+                <p class="subject-name-en">Mathematics</p>
+                <p class="subject-desc">Đại số, Hình học, Số học và các phép tính</p>
+            </a>
 
-                <!-- Chemistry -->
-                <a href="{{ url_for('chemistry_tutor') }}" class="subject-card chemistry">
-                    <span class="subject-icon"><i class="fa-solid fa-flask"></i></span>
-                    <h3 class="subject-name">Hóa học</h3>
-                    <p class="subject-name-en">Chemistry</p>
-                    <p class="subject-desc">Nguyên tử và Phản ứng hóa học</p>
-                </a>
+            <!-- Physics -->
+            <a href="{{ url_for('physics_tutor') }}" class="subject-card physics">
+                <span class="subject-icon"><i class="fa-solid fa-bolt"></i></span>
+                <h3 class="subject-name">Vật lý</h3>
+                <p class="subject-name-en">Physics</p>
+                <p class="subject-desc">Cơ học, Nhiệt học, Điện học và Quang học</p>
+            </a>
 
-                <!-- Biology -->
-                <a href="{{ url_for('biology_tutor') }}" class="subject-card biology">
-                    <span class="subject-icon"><i class="fa-solid fa-dna"></i></span>
-                    <h3 class="subject-name">Sinh học</h3>
-                    <p class="subject-name-en">Biology</p>
-                    <p class="subject-desc">Tế bào và Di truyền học</p>
-                </a>
-            </div>
+            <!-- Chemistry -->
+            <a href="{{ url_for('chemistry_tutor') }}" class="subject-card chemistry">
+                <span class="subject-icon"><i class="fa-solid fa-flask"></i></span>
+                <h3 class="subject-name">Hóa học</h3>
+                <p class="subject-name-en">Chemistry</p>
+                <p class="subject-desc">Chất, Nguyên tử, Phản ứng và Bảng tuần hoàn</p>
+            </a>
+
+            <!-- Biology -->
+            <a href="{{ url_for('biology_tutor') }}" class="subject-card biology">
+                <span class="subject-icon"><i class="fa-solid fa-dna"></i></span>
+                <h3 class="subject-name">Sinh học</h3>
+                <p class="subject-name-en">Biology</p>
+                <p class="subject-desc">Tế bào, Di truyền, Sinh thái và Sự sống</p>
+            </a>
         </div>
 
-        <!-- Games Sidebar -->
-        <div class="games-aside">
-            <div class="section-title">Giải trí khoa học</div>
-            <div class="sidebar-game-card">
+        <!-- Games Banner -->
+        <div class="games-cta">
+            <div class="games-cta-content">
                 <h3>Vừa học vừa chơi!</h3>
-                <p>Khám phá kho tàng trò chơi Scratch tương tác hấp dẫn giúp tiếp thu tri thức dễ dàng hơn.</p>
-                <a href="{{ url_for('games') }}" class="game-launch-btn">
-                    <i class="fa-solid fa-rocket"></i> Khám phá Game
-                </a>
+                <p>Khám phá kho tàng trò chơi giáo dục Scratch tương tác giúp việc học KHTN trở nên thú vị hơn bao giờ
+                    hết.</p>
+                <a href="{{ url_for('games') }}" class="game-btn">Khám phá Trò chơi <i
+                        class="fa-solid fa-rocket"></i></a>
             </div>
+            <div class="cta-decoration"><i class="fa-solid fa-gamepad"></i></div>
         </div>
     </div>
 
