@@ -654,7 +654,7 @@ def chat():
     
     prompt = f"""
     Bạn là **Thầy giáo Song ngữ Việt – Anh**, chuyên dạy môn **{current_subject['name']} ({current_subject['name_en']})**.  
-    Model: **Gemma-3-12B-IT** (Instruction Tuned for Education).
+    Model: **Gemma-3-4B-IT** (Instruction Tuned for Education).
     Giọng điệu: Thân thiện, khích lệ, chuyên nghiệp (Professional & Encouraging).
     Xưng hô: **"thầy – con"**.
     
@@ -788,14 +788,222 @@ def admin():
         })
     
     # Statistics
+    all_levels = []
+    for u in user_data:
+        all_levels.extend([u['nangluctoan'], u['nanglucly'], u['nangluchoa'], u['nanglucsinh']])
+    
     stats = {
         'total_students': len(user_data),
         'gioi_count': sum(1 for u in user_data if u['nangluctoan'] == 'Gioi' or u['nanglucly'] == 'Gioi' or u['nangluchoa'] == 'Gioi' or u['nanglucsinh'] == 'Gioi'),
         'kha_count': sum(1 for u in user_data if 'Kha' in [u['nangluctoan'], u['nanglucly'], u['nangluchoa'], u['nanglucsinh']]),
-        'total_questions': sum(u['tongsocau'] for u in user_data)
+        'tb_count': sum(1 for u in user_data if 'TB' in [u['nangluctoan'], u['nanglucly'], u['nangluchoa'], u['nanglucsinh']]),
+        'yeu_count': sum(1 for u in user_data if 'Yeu' in [u['nangluctoan'], u['nanglucly'], u['nangluchoa'], u['nanglucsinh']]),
+        'total_questions': sum(u['tongsocau'] for u in user_data),
+        # Subject-specific stats
+        'toan_gioi': sum(1 for u in user_data if u['nangluctoan'] == 'Gioi'),
+        'toan_kha': sum(1 for u in user_data if u['nangluctoan'] == 'Kha'),
+        'toan_tb': sum(1 for u in user_data if u['nangluctoan'] == 'TB'),
+        'toan_yeu': sum(1 for u in user_data if u['nangluctoan'] == 'Yeu'),
+        'ly_gioi': sum(1 for u in user_data if u['nanglucly'] == 'Gioi'),
+        'ly_kha': sum(1 for u in user_data if u['nanglucly'] == 'Kha'),
+        'ly_tb': sum(1 for u in user_data if u['nanglucly'] == 'TB'),
+        'ly_yeu': sum(1 for u in user_data if u['nanglucly'] == 'Yeu'),
+        'hoa_gioi': sum(1 for u in user_data if u['nangluchoa'] == 'Gioi'),
+        'hoa_kha': sum(1 for u in user_data if u['nangluchoa'] == 'Kha'),
+        'hoa_tb': sum(1 for u in user_data if u['nangluchoa'] == 'TB'),
+        'hoa_yeu': sum(1 for u in user_data if u['nangluchoa'] == 'Yeu'),
+        'sinh_gioi': sum(1 for u in user_data if u['nanglucsinh'] == 'Gioi'),
+        'sinh_kha': sum(1 for u in user_data if u['nanglucsinh'] == 'Kha'),
+        'sinh_tb': sum(1 for u in user_data if u['nanglucsinh'] == 'TB'),
+        'sinh_yeu': sum(1 for u in user_data if u['nanglucsinh'] == 'Yeu'),
+        # Total questions per subject
+        'total_toan': sum(u['socautoan'] for u in user_data),
+        'total_ly': sum(u['socauly'] for u in user_data),
+        'total_hoa': sum(u['socauhoa'] for u in user_data),
+        'total_sinh': sum(u['socausinh'] for u in user_data),
     }
     
-    return render_template('admin.html', user_data=user_data, stats=stats)
+    # Pre-render table body in Python with enhanced UI classes
+    table_rows = []
+    for s in user_data:
+        avatar_char = s['tenhocsinh'][0].upper() if s['tenhocsinh'] else "?"
+        # Determine strict level class
+        def get_lvl_class(lvl):
+            return f"badge-{lvl.lower()}" if lvl else "badge-tb"
+            
+        row = f"""
+        <tr class="table-row">
+            <td>
+                <div class="student-info">
+                    <div class="avatar">{avatar_char}</div>
+                    <div class="info-text">
+                        <div class="name">{s['tenhocsinh']}</div>
+                        <div class="username">@{s['tendangnhap']}</div>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div class="subject-cell">
+                    <span class="badge {get_lvl_class(s['nangluctoan'])}">{s['nangluctoan']}</span>
+                    <span class="sub-text">{s['socautoan']} câu</span>
+                </div>
+            </td>
+            <td>
+                <div class="subject-cell">
+                    <span class="badge {get_lvl_class(s['nanglucly'])}">{s['nanglucly']}</span>
+                    <span class="sub-text">{s['socauly']} câu</span>
+                </div>
+            </td>
+            <td>
+                <div class="subject-cell">
+                    <span class="badge {get_lvl_class(s['nangluchoa'])}">{s['nangluchoa']}</span>
+                    <span class="sub-text">{s['socauhoa']} câu</span>
+                </div>
+            </td>
+            <td>
+                <div class="subject-cell">
+                    <span class="badge {get_lvl_class(s['nanglucsinh'])}">{s['nanglucsinh']}</span>
+                    <span class="sub-text">{s['socausinh']} câu</span>
+                </div>
+            </td>
+            <td><span class="total-questions">{s['tongsocau']}</span></td>
+            <td>
+                <button class="btn-view-detail" onclick="showStudentDetails({s['id']})">
+                    <i class="fa-solid fa-eye"></i> Xem & Đánh giá
+                </button>
+            </td>
+        </tr>
+        """
+        table_rows.append(row)
+    table_html = "".join(table_rows)
+    
+    # Get PDF files list
+    pdf_files = []
+    upload_dir = app.config['UPLOAD_FOLDER']
+    if os.path.exists(upload_dir):
+        for f in os.listdir(upload_dir):
+            if f.endswith('.pdf'):
+                fpath = os.path.join(upload_dir, f)
+                fsize = os.path.getsize(fpath)
+                pdf_files.append({
+                    'name': f,
+                    'size': round(fsize / 1024, 1)  # KB
+                })
+    
+    return render_template('admin.html', user_data=user_data, stats=stats, pdf_files=pdf_files, table_html=table_html)
+
+# API: Chi tiết học sinh
+@app.route('/admin/api/student/<int:student_id>')
+def admin_student_detail(student_id):
+    if 'admin_session' not in session or not session.get('admin_session'):
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    user = db.session.get(NguoiDung, student_id)
+    if not user:
+        return jsonify({'error': 'Student not found'}), 404
+    
+    return jsonify({
+        'id': user.id,
+        'tendangnhap': user.tendangnhap,
+        'tenhocsinh': user.tenhocsinh or 'Chưa đặt tên',
+        'nangluctoan': user.nangluctoan or 'TB',
+        'nanglucly': user.nanglucly or 'TB',
+        'nangluchoa': user.nangluchoa or 'TB',
+        'nanglucsinh': user.nanglucsinh or 'TB',
+        'socautoan': user.socautoan or 0,
+        'socauly': user.socauly or 0,
+        'socauhoa': user.socauhoa or 0,
+        'socausinh': user.socausinh or 0,
+        'lydotoan': user.lydotoan or 'Chưa có đánh giá',
+        'lydoly': user.lydoly or 'Chưa có đánh giá',
+        'lydohoa': user.lydohoa or 'Chưa có đánh giá',
+        'lydosinh': user.lydosinh or 'Chưa có đánh giá'
+    })
+
+# API: Xóa học sinh
+@app.route('/admin/api/student/<int:student_id>/delete', methods=['POST'])
+def admin_delete_student(student_id):
+    if 'admin_session' not in session or not session.get('admin_session'):
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    user = db.session.get(NguoiDung, student_id)
+    if not user:
+        return jsonify({'error': 'Student not found'}), 404
+    
+    if user.tendangnhap == 'lequangphuc':
+        return jsonify({'error': 'Cannot delete admin account'}), 403
+    
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({'success': True, 'message': f'Đã xóa học sinh {user.tenhocsinh}'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+# API: Reset dữ liệu học sinh
+@app.route('/admin/api/student/<int:student_id>/reset', methods=['POST'])
+def admin_reset_student(student_id):
+    if 'admin_session' not in session or not session.get('admin_session'):
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    user = db.session.get(NguoiDung, student_id)
+    if not user:
+        return jsonify({'error': 'Student not found'}), 404
+    
+    try:
+        # Reset subject-specific data
+        user.lichsutoan = ''
+        user.lichsuly = ''
+        user.lichsuhoa = ''
+        user.lichsusinh = ''
+        user.nangluctoan = 'TB'
+        user.nanglucly = 'TB'
+        user.nangluchoa = 'TB'
+        user.nanglucsinh = 'TB'
+        user.lydotoan = ''
+        user.lydoly = ''
+        user.lydohoa = ''
+        user.lydosinh = ''
+        user.socautoan = 0
+        user.socauly = 0
+        user.socauhoa = 0
+        user.socausinh = 0
+        # Reset legacy columns
+        user.nangluc = 'TB'
+        user.lichsu = ''
+        user.lydo = ''
+        db.session.commit()
+        return jsonify({'success': True, 'message': f'Đã reset dữ liệu học sinh {user.tenhocsinh}'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+# Upload PDF
+@app.route('/admin/upload_pdf', methods=['POST'])
+def upload_pdf():
+    if 'admin_session' not in session or not session.get('admin_session'):
+        flash('Bạn không có quyền truy cập.', 'error')
+        return redirect(url_for('admin'))
+    
+    if 'pdf_file' not in request.files:
+        flash('Không tìm thấy file PDF.', 'error')
+        return redirect(url_for('admin'))
+    
+    file = request.files['pdf_file']
+    if file.filename == '':
+        flash('Chưa chọn file.', 'error')
+        return redirect(url_for('admin'))
+    
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        flash(f'Upload file {filename} thành công! Đang cập nhật RAG...', 'success')
+        initialize_rag_data()  # Re-init RAG after upload
+    else:
+        flash('Chỉ cho phép upload file PDF.', 'error')
+    
+    return redirect(url_for('admin'))
 
 @app.route('/admin/delete_pdf/<filename>', methods=['POST'])
 def delete_pdf(filename):
@@ -825,13 +1033,25 @@ def export_csv():
     danhsachhocsinh = NguoiDung.query.all()
     user_data = []
     for user in danhsachhocsinh:
+        if user.tendangnhap == 'lequangphuc':
+            continue
         user_data.append({
             'ID': user.id,
             'Tên đăng nhập': user.tendangnhap,
-            'Tên học sinh': user.tenhocsinh or "Chưa đặt tên",  # THÊM CỘT TÊN
-            'Năng lực': user.nangluc,
-            'Lý do': user.lydo,
-            'Lịch sử': user.lichsu if user.lichsu else 'Chưa có lịch sử'
+            'Tên học sinh': user.tenhocsinh or 'Chưa đặt tên',
+            'Năng lực Toán': user.nangluctoan or 'TB',
+            'Số câu Toán': user.socautoan or 0,
+            'Lý do Toán': user.lydotoan or '',
+            'Năng lực Lý': user.nanglucly or 'TB',
+            'Số câu Lý': user.socauly or 0,
+            'Lý do Lý': user.lydoly or '',
+            'Năng lực Hóa': user.nangluchoa or 'TB',
+            'Số câu Hóa': user.socauhoa or 0,
+            'Lý do Hóa': user.lydohoa or '',
+            'Năng lực Sinh': user.nanglucsinh or 'TB',
+            'Số câu Sinh': user.socausinh or 0,
+            'Lý do Sinh': user.lydosinh or '',
+            'Tổng số câu': (user.socautoan or 0) + (user.socauly or 0) + (user.socauhoa or 0) + (user.socausinh or 0)
         })
     
     df = pd.DataFrame(user_data)
@@ -845,6 +1065,7 @@ def export_csv():
         as_attachment=True,
         download_name='ket_qua_hoc_tap.csv'
     )
+
 @app.route('/admin/logout')
 def admin_logout():
     session.pop('admin_session', None)

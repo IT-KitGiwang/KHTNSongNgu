@@ -4,29 +4,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Quản trị - Năng lực Học sinh</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Admin Dashboard | KHTN Song Ngữ</title>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
         :root {
-            --primary: #2563eb;
-            --primary-dark: #1e40af;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --purple: #8b5cf6;
-            --sidebar-bg: #0f172a;
-            --main-bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text-primary: #0f172a;
-            --text-secondary: #64748b;
-            --border: #e2e8f0;
+            /* Theme: Professional White & Blue */
+            --primary: #1e40af;
+            /* Deep Blue */
+            --primary-light: #3b82f6;
+            /* Bright Blue */
+            --primary-bg: #eff6ff;
+            /* Light Blue BG */
 
-            /* Subject Colors */
-            --math-color: #10b981;
-            --physics-color: #f59e0b;
-            --chemistry-color: #3b82f6;
-            --biology-color: #8b5cf6;
+            --bg-body: #f8fafc;
+            /* Slate 50 */
+            --surface: #ffffff;
+            /* Pure White */
+            --border: #bfdbfe;
+            /* Light Blue Border */
+
+            --text-main: #0f172a;
+            /* Dark Slate */
+            --text-sub: #64748b;
+            /* Muted Slate */
+
+            /* Status Colors (Harmonized) */
+            --success: #059669;
+            --success-bg: #ecfdf5;
+            --warning: #d97706;
+            --warning-bg: #fffbeb;
+            --danger: #dc2626;
+            --danger-bg: #fef2f2;
+            --info: #2563eb;
+            --info-bg: #eff6ff;
+
+            --sidebar-width: 280px;
+            --header-height: 70px;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
         }
 
         * {
@@ -36,344 +60,343 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background: var(--main-bg);
-            min-height: 100vh;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-body);
+            color: var(--text-main);
+            height: 100vh;
             display: flex;
+            overflow: hidden;
         }
 
-        /* Sidebar */
+        /* --- SIDEBAR --- */
         .sidebar {
-            width: 280px;
-            background: linear-gradient(180deg, var(--sidebar-bg) 0%, #1e293b 100%);
-            color: white;
-            padding: 24px;
+            width: var(--sidebar-width);
+            background: var(--surface);
+            border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            position: fixed;
-            height: 100vh;
-            z-index: 100;
+            position: relative;
+            z-index: 50;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .sidebar-logo {
+        .sidebar-header {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 16px;
-            margin-bottom: 32px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-        }
-
-        .sidebar-logo i {
-            font-size: 1.5rem;
-            color: #60a5fa;
-        }
-
-        .sidebar-logo span {
-            font-size: 1.1rem;
+            color: var(--primary);
             font-weight: 700;
-            letter-spacing: -0.5px;
+            font-size: 1.25rem;
         }
 
-        .nav-section {
-            margin-bottom: 24px;
-        }
-
-        .nav-label {
-            font-size: 0.75rem;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-            padding-left: 16px;
+        .nav-menu {
+            padding: 24px 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
         }
 
         .nav-item {
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            color: var(--text-sub);
+            font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 14px 16px;
-            color: #94a3b8;
-            text-decoration: none;
-            border-radius: 10px;
-            margin-bottom: 4px;
-            transition: all 0.2s;
+            gap: 14px;
             cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
         }
 
         .nav-item:hover {
-            background: rgba(255, 255, 255, 0.08);
-            color: white;
+            background: var(--primary-bg);
+            color: var(--primary);
         }
 
         .nav-item.active {
-            background: linear-gradient(90deg, var(--primary) 0%, #3b82f6 100%);
-            color: white;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-        }
-
-        .nav-item i {
-            width: 20px;
-            text-align: center;
+            background: var(--primary-bg);
+            color: var(--primary);
+            border-color: var(--border);
         }
 
         .sidebar-footer {
-            margin-top: auto;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 24px;
+            border-top: 1px solid var(--border);
         }
 
         .logout-btn {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 14px 16px;
-            color: #f87171;
+            padding: 12px;
+            border-radius: var(--radius);
+            color: var(--danger);
+            font-weight: 600;
             text-decoration: none;
-            border-radius: 10px;
-            transition: all 0.2s;
+            transition: 0.2s;
         }
 
         .logout-btn:hover {
-            background: rgba(248, 113, 113, 0.1);
+            background: var(--danger-bg);
         }
 
-        /* Main Content */
-        .main-content {
+        /* --- MAIN CONTENT --- */
+        .main-wrapper {
             flex: 1;
-            margin-left: 280px;
-            padding: 32px 40px;
-            overflow-y: auto;
-            min-height: 100vh;
-        }
-
-        .page-header {
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Top Header */
+        .top-header {
+            height: var(--header-height);
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
             align-items: center;
-            margin-bottom: 32px;
+            justify-content: space-between;
+            padding: 0 32px;
+            flex-shrink: 0;
         }
 
-        .page-title {
-            font-size: 1.75rem;
-            font-weight: 800;
-            color: var(--text-primary);
-            letter-spacing: -0.5px;
+        .page-info h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
         }
 
-        .page-subtitle {
-            color: var(--text-secondary);
-            margin-top: 4px;
-            font-size: 0.95rem;
+        .page-info p {
+            font-size: 0.875rem;
+            color: var(--text-sub);
+            margin-top: 2px;
         }
 
         .header-actions {
             display: flex;
-            gap: 12px;
-        }
-
-        .btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 20px;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s;
-            text-decoration: none;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%);
-            color: white;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+            gap: 16px;
         }
 
         .btn-outline {
-            background: white;
-            color: var(--text-primary);
+            padding: 8px 16px;
+            text-decoration: none;
             border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: 0.2s;
+            background: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .btn-outline:hover {
-            background: var(--main-bg);
+            background: var(--primary-bg);
+            border-color: var(--primary-light);
         }
 
-        /* Stats Grid */
-        .stats-grid {
+        /* Scrollable Content */
+        .content-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+            scroll-behavior: smooth;
+        }
+
+        /* --- DASHBOARD STATS --- */
+        .stats-row {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 24px;
             margin-bottom: 32px;
         }
 
         .stat-card {
-            background: white;
-            border-radius: 16px;
+            background: var(--surface);
             padding: 24px;
+            border-radius: var(--radius);
             border: 1px solid var(--border);
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
+            border-left: 4px solid var(--primary);
+            /* Blue accent */
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
         }
 
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
+        .stat-meta .label {
+            font-size: 0.875rem;
+            color: var(--text-sub);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .stat-card:nth-child(1)::before {
-            background: var(--primary);
+        .stat-meta .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-top: 8px;
+            line-height: 1;
         }
 
-        .stat-card:nth-child(2)::before {
-            background: var(--success);
-        }
-
-        .stat-card:nth-child(3)::before {
-            background: var(--warning);
-        }
-
-        .stat-card:nth-child(4)::before {
-            background: var(--purple);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-        }
-
-        .stat-icon {
+        .stat-icon-box {
             width: 48px;
             height: 48px;
+            background: var(--primary-bg);
+            color: var(--primary);
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.25rem;
-            margin-bottom: 16px;
+            font-size: 1.5rem;
         }
 
-        .stat-card:nth-child(1) .stat-icon {
-            background: #eff6ff;
-            color: var(--primary);
+        /* --- CHARTS --- */
+        .charts-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
         }
 
-        .stat-card:nth-child(2) .stat-icon {
-            background: #ecfdf5;
-            color: var(--success);
-        }
-
-        .stat-card:nth-child(3) .stat-icon {
-            background: #fef3c7;
-            color: var(--warning);
-        }
-
-        .stat-card:nth-child(4) .stat-icon {
-            background: #f3e8ff;
-            color: var(--purple);
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--text-primary);
-            margin-bottom: 4px;
-        }
-
-        .stat-label {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        /* Table Card */
-        .table-card {
-            background: white;
-            border-radius: 20px;
+        .chart-box {
+            background: var(--surface);
+            padding: 24px;
+            border-radius: var(--radius);
             border: 1px solid var(--border);
-            overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            box-shadow: var(--shadow);
         }
 
-        .table-header {
-            padding: 24px 28px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .table-title {
-            font-size: 1.1rem;
+        .chart-title {
             font-weight: 700;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .table-title i {
-            color: var(--primary);
-        }
-
-        .search-box {
+            color: var(--text-main);
+            margin-bottom: 20px;
+            font-size: 1rem;
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 10px 16px;
-            background: var(--main-bg);
-            border-radius: 10px;
+        }
+
+        /* --- TABLE --- */
+        .table-panel {
+            background: var(--surface);
+            border-radius: var(--radius);
             border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 40px;
         }
 
-        .search-box input {
-            border: none;
-            background: transparent;
-            outline: none;
+        .panel-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: space-between;
+            align-items: center;
+            background: #fdfdfe;
+        }
+
+        .search-group {
+            position: relative;
+            width: 280px;
+        }
+
+        .search-group input {
+            width: 100%;
+            padding: 10px 16px 10px 42px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
             font-size: 0.9rem;
-            width: 200px;
+            outline: none;
+            transition: 0.2s;
         }
 
-        .search-box i {
-            color: var(--text-secondary);
+        .search-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-bg);
+        }
+
+        .search-group i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-sub);
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-tab {
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: transparent;
+            color: var(--text-sub);
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+
+        .filter-tab:hover {
+            background: var(--bg-body);
+        }
+
+        .filter-tab.active {
+            background: var(--primary-bg);
+            color: var(--primary);
+            border-color: var(--border);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
+            white-space: nowrap;
         }
 
         th {
             text-align: left;
-            padding: 16px 20px;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            font-weight: 600;
+            padding: 16px 24px;
+            background: #f8fafc;
+            color: var(--text-sub);
+            font-weight: 700;
+            font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            background: #f8fafc;
             border-bottom: 1px solid var(--border);
         }
 
         td {
-            padding: 18px 20px;
-            font-size: 0.9rem;
-            color: var(--text-primary);
+            padding: 16px 24px;
             border-bottom: 1px solid #f1f5f9;
             vertical-align: middle;
+            color: var(--text-main);
         }
 
         tr:last-child td {
@@ -381,191 +404,305 @@
         }
 
         tr:hover td {
-            background: #fafbfc;
+            background: #f8fafc;
         }
 
+        /* --- APP.PY GENERATED CLASSES --- */
+        /* These classes map to the Python pre-rendered HTML */
         .student-info {
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
-        .student-avatar {
-            width: 40px;
-            height: 40px;
+        .avatar {
+            width: 36px;
+            height: 36px;
             border-radius: 10px;
-            background: linear-gradient(135deg, var(--primary) 0%, #60a5fa 100%);
+            background: var(--primary-bg);
+            color: var(--primary);
+            font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-weight: 700;
-            font-size: 0.9rem;
+            border: 1px solid var(--border);
         }
 
-        .student-name {
+        .info-text .name {
             font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .student-username {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-
-        /* Level Badges */
-        .level-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .level-gioi {
-            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-            color: #15803d;
-        }
-
-        .level-kha {
-            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-            color: #1d4ed8;
-        }
-
-        .level-tb {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            color: #b45309;
-        }
-
-        .level-yeu {
-            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-            color: #dc2626;
-        }
-
-        /* Subject Progress */
-        .subject-levels {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .subject-badge {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .subject-math {
-            background: rgba(16, 185, 129, 0.1);
-            color: #10b981;
-        }
-
-        .subject-physics {
-            background: rgba(245, 158, 11, 0.1);
-            color: #f59e0b;
-        }
-
-        .subject-chemistry {
-            background: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
-        }
-
-        .subject-biology {
-            background: rgba(139, 92, 246, 0.1);
-            color: #8b5cf6;
-        }
-
-        .question-count {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-        }
-
-        .question-count i {
+            font-size: 0.95rem;
             color: var(--primary);
         }
 
-        /* Empty State */
-        .empty-state {
+        .info-text .username {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+        }
+
+        /* Badges */
+        .subject-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .sub-text {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
             text-align: center;
-            padding: 60px 20px;
+            border: 1px solid transparent;
+            width: fit-content;
         }
 
-        .empty-state i {
-            font-size: 4rem;
-            color: #cbd5e1;
-            margin-bottom: 20px;
+        .badge-gioi {
+            background: var(--success-bg);
+            color: var(--success);
+            border-color: #bbf7d0;
         }
 
-        .empty-state h3 {
-            color: var(--text-primary);
-            margin-bottom: 8px;
+        .badge-kha {
+            background: var(--info-bg);
+            color: var(--info);
+            border-color: #bfdbfe;
         }
 
-        .empty-state p {
-            color: var(--text-secondary);
+        .badge-tb {
+            background: var(--warning-bg);
+            color: var(--warning);
+            border-color: #fde68a;
         }
 
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        .badge-yeu {
+            background: var(--danger-bg);
+            color: var(--danger);
+            border-color: #fecaca;
         }
 
-        @media (max-width: 768px) {
+        .btn-view-detail {
+            background: white;
+            border: 1px solid var(--border);
+            color: var(--primary);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-view-detail:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* --- MODAL --- */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .modal.open {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-box {
+            background: white;
+            width: 95%;
+            max-width: 900px;
+            max-height: 90vh;
+            border-radius: var(--radius);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: scale(0.95);
+            transition: transform 0.3s;
+        }
+
+        .modal.open .modal-box {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+        }
+
+        .modal-title h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-sub);
+            cursor: pointer;
+        }
+
+        .modal-close:hover {
+            color: var(--danger);
+        }
+
+        .modal-content {
+            padding: 32px;
+            overflow-y: auto;
+        }
+
+        /* Assessment Table in Modal */
+        .assessment-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .assessment-table th {
+            background: var(--primary-bg);
+            color: var(--primary);
+            border-bottom: 1px solid var(--border);
+            padding: 16px;
+        }
+
+        .assessment-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        .assessment-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .reason-cell {
+            font-style: italic;
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        .ai-tag {
+            display: inline-block;
+            background: var(--success);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        /* --- RESPONSIVE --- */
+        .toggle-btn {
+            display: none;
+            background: white;
+            border: 1px solid var(--border);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            color: var(--primary);
+            cursor: pointer;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 40;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        @media (max-width: 1024px) {
             .sidebar {
-                display: none;
+                position: fixed;
+                height: 100%;
+                left: -100%;
+                box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
             }
 
-            .main-content {
-                margin-left: 0;
+            .sidebar.active {
+                left: 0;
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+                opacity: 1;
+            }
+
+            .toggle-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .top-header {
+                padding: 0 20px;
+            }
+
+            .content-body {
                 padding: 20px;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 
 <body>
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="sidebar-logo">
-            <i class="fa-solid fa-graduation-cap"></i>
-            <span>KHTN Admin</span>
-        </div>
 
-        <div class="nav-section">
-            <div class="nav-label">Tổng quan</div>
-            <a href="{{ url_for('admin') }}" class="nav-item active">
+    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>ADMIN KHTN</span>
+            </div>
+            <button class="modal-close" onclick="toggleSidebar()" style="font-size:1.2rem; display:none;"
+                id="mobileClose">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="nav-menu">
+            <div class="nav-item active" onclick="switchTab('dashboard', this)">
                 <i class="fa-solid fa-chart-pie"></i>
-                <span>Dashboard</span>
-            </a>
-        </div>
-
-        <div class="nav-section">
-            <div class="nav-label">Quản lý</div>
-            <div class="nav-item">
+                <span>Tổng quan</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('students', this)">
                 <i class="fa-solid fa-users"></i>
-                <span>Học sinh</span>
-            </div>
-            <div class="nav-item">
-                <i class="fa-solid fa-chart-line"></i>
-                <span>Thống kê</span>
+                <span>Danh sách học sinh</span>
             </div>
         </div>
-
         <div class="sidebar-footer">
             <a href="{{ url_for('logout') }}" class="logout-btn">
                 <i class="fa-solid fa-right-from-bracket"></i>
@@ -574,164 +711,299 @@
         </div>
     </aside>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <div class="page-header">
-            <div>
-                <h1 class="page-title">📊 Dashboard Năng lực Học sinh</h1>
-                <p class="page-subtitle">Theo dõi và đánh giá năng lực học tập theo từng môn</p>
+    <!-- MAIN CONTENT -->
+    <div class="main-wrapper">
+        <header class="top-header">
+            <div style="display:flex; align-items:center; gap:16px;">
+                <button class="toggle-btn" onclick="toggleSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="page-info">
+                    <h1>Dashboard</h1>
+                    <p>Hệ thống đánh giá năng lực & AI Tutor</p>
+                </div>
             </div>
-            <div class="header-actions">
-                <a href="{{ url_for('index') }}" class="btn btn-outline">
-                    <i class="fa-solid fa-arrow-left"></i>
-                    Về trang chủ
-                </a>
+            <a href="{{ url_for('index') }}" class="btn-outline">
+                <i class="fa-solid fa-house"></i>
+                <span class="desktop-only">Trang chủ</span>
+            </a>
+        </header>
+
+        <main class="content-body">
+
+            <!-- Dashboard Tab -->
+            <div id="tab-dashboard" class="tab-pane">
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-meta">
+                            <div class="label">Tổng số học sinh</div>
+                            <div class="value">{{ stats.total_students }}</div>
+                        </div>
+                        <div class="stat-icon-box"><i class="fa-solid fa-user-group"></i></div>
+                    </div>
+                    <div class="stat-card" style="border-left-color: var(--success);">
+                        <div class="stat-meta">
+                            <div class="label">Học sinh Giỏi</div>
+                            <div class="value" style="color:var(--success);">{{ stats.gioi_count }}</div>
+                        </div>
+                        <div class="stat-icon-box" style="background:var(--success-bg); color:var(--success);">
+                            <i class="fa-solid fa-certificate"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="border-left-color: var(--warning);">
+                        <div class="stat-meta">
+                            <div class="label">Học sinh Khá</div>
+                            <div class="value" style="color:var(--warning);">{{ stats.kha_count }}</div>
+                        </div>
+                        <div class="stat-icon-box" style="background:var(--warning-bg); color:var(--warning);">
+                            <i class="fa-solid fa-star-half-stroke"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="border-left-color: #9333ea;">
+                        <div class="stat-meta">
+                            <div class="label">Tổng câu hỏi</div>
+                            <div class="value" style="color:#9333ea;">{{ stats.total_questions }}</div>
+                        </div>
+                        <div class="stat-icon-box" style="background:#faf5ff; color:#9333ea;">
+                            <i class="fa-solid fa-comments"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-row">
+                    <div class="chart-box">
+                        <div class="chart-title">
+                            <i class="fa-solid fa-chart-column" style="color:var(--primary);"></i>
+                            Phân bố năng lực theo môn
+                        </div>
+                        <canvas id="capacityChart"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <div class="chart-title">
+                            <i class="fa-solid fa-chart-pie" style="color:var(--primary);"></i>
+                            Tỷ lệ xếp loại chung
+                        </div>
+                        <div style="height:300px; display:flex; justify-content:center;">
+                            <canvas id="pieChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Students Tab -->
+            <div id="tab-students" class="tab-pane" style="display:none;">
+                <div class="table-panel">
+                    <div class="panel-header">
+                        <div class="search-group">
+                            <i class="fa-solid fa-search"></i>
+                            <input type="text" id="searchInput" onkeyup="filterTable()"
+                                placeholder="Tìm kiếm học sinh...">
+                        </div>
+                        <div class="filter-tabs">
+                            <button class="filter-tab active" onclick="setFilter('all', this)">Tất cả</button>
+                            <button class="filter-tab" onclick="setFilter('Gioi', this)">Giỏi</button>
+                            <button class="filter-tab" onclick="setFilter('Kha', this)">Khá</button>
+                            <button class="filter-tab" onclick="setFilter('Yeu', this)">Yếu</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Thông tin học sinh</th>
+                                    <th>Toán</th>
+                                    <th>Lý</th>
+                                    <th>Hóa</th>
+                                    <th>Sinh</th>
+                                    <th>Tổng câu</th>
+                                    <th>Chi tiết</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{ table_html|safe }}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- DETAIL MODAL -->
+    <div class="modal" id="detailModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <div
+                        style="font-size:0.8rem; text-transform:uppercase; color:var(--text-sub); letter-spacing:1px; margin-bottom:4px;">
+                        Hồ sơ năng lực</div>
+                    <h3 id="modalName">Nguyễn Văn A</h3>
+                </div>
+                <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="modal-content">
+                <table class="assessment-table">
+                    <thead>
+                        <tr>
+                            <th style="width:15%">Môn học</th>
+                            <th style="width:15%">Xếp loại</th>
+                            <th style="width:15%">Số câu</th>
+                            <th style="width:55%">Đánh giá chi tiết & Lý do từ AI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalTableBody">
+                        <!-- JS injected -->
+                    </tbody>
+                </table>
             </div>
         </div>
+    </div>
 
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fa-solid fa-user-graduate"></i>
-                </div>
-                <div class="stat-value">{{ stats.total_students }}</div>
-                <div class="stat-label">Tổng số học sinh</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fa-solid fa-trophy"></i>
-                </div>
-                <div class="stat-value">{{ stats.gioi_count }}</div>
-                <div class="stat-label">Học sinh Giỏi</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fa-solid fa-medal"></i>
-                </div>
-                <div class="stat-value">{{ stats.kha_count }}</div>
-                <div class="stat-label">Học sinh Khá</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fa-solid fa-comments"></i>
-                </div>
-                <div class="stat-value">{{ stats.total_questions }}</div>
-                <div class="stat-label">Tổng câu hỏi</div>
-            </div>
-        </div>
-
-        <!-- Students Table -->
-        <div class="table-card">
-            <div class="table-header">
-                <div class="table-title">
-                    <i class="fa-solid fa-users"></i>
-                    Danh sách Học sinh
-                </div>
-                <div class="search-box">
-                    <i class="fa-solid fa-search"></i>
-                    <input type="text" id="searchInput" placeholder="Tìm kiếm học sinh..." onkeyup="filterTable()">
-                </div>
-            </div>
-
-            {% if user_data %}
-            <table id="studentTable">
-                <thead>
-                    <tr>
-                        <th>Học sinh</th>
-                        <th>🧮 Toán</th>
-                        <th>⚛️ Lý</th>
-                        <th>🧪 Hóa</th>
-                        <th>🌿 Sinh</th>
-                        <th>Số câu hỏi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for user in user_data %}
-                    <tr>
-                        <td>
-                            <div class="student-info">
-                                <div class="student-avatar">{{ user.tenhocsinh[0] | upper }}</div>
-                                <div>
-                                    <div class="student-name">{{ user.tenhocsinh }}</div>
-                                    <div class="student-username">@{{ user.tendangnhap }}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="level-badge level-{{ user.nangluctoan | lower }}" title="{{ user.lydotoan }}">
-                                {% if user.nangluctoan == 'Gioi' %}⭐{% elif user.nangluctoan == 'Kha' %}✨{% elif
-                                user.nangluctoan == 'TB' %}📚{% else %}📖{% endif %}
-                                {{ user.nangluctoan }}
-                            </span>
-                            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px;">{{ user.socautoan }} câu
-                            </div>
-                        </td>
-                        <td>
-                            <span class="level-badge level-{{ user.nanglucly | lower }}" title="{{ user.lydoly }}">
-                                {% if user.nanglucly == 'Gioi' %}⭐{% elif user.nanglucly == 'Kha' %}✨{% elif
-                                user.nanglucly == 'TB' %}📚{% else %}📖{% endif %}
-                                {{ user.nanglucly }}
-                            </span>
-                            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px;">{{ user.socauly }}
-                                câu</div>
-                        </td>
-                        <td>
-                            <span class="level-badge level-{{ user.nangluchoa | lower }}" title="{{ user.lydohoa }}">
-                                {% if user.nangluchoa == 'Gioi' %}⭐{% elif user.nangluchoa == 'Kha' %}✨{% elif
-                                user.nangluchoa == 'TB' %}📚{% else %}📖{% endif %}
-                                {{ user.nangluchoa }}
-                            </span>
-                            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px;">{{ user.socauhoa }}
-                                câu</div>
-                        </td>
-                        <td>
-                            <span class="level-badge level-{{ user.nanglucsinh | lower }}" title="{{ user.lydosinh }}">
-                                {% if user.nanglucsinh == 'Gioi' %}⭐{% elif user.nanglucsinh == 'Kha' %}✨{% elif
-                                user.nanglucsinh == 'TB' %}📚{% else %}📖{% endif %}
-                                {{ user.nanglucsinh }}
-                            </span>
-                            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px;">{{ user.socausinh }}
-                                câu</div>
-                        </td>
-                        <td>
-                            <div class="question-count">
-                                <i class="fa-solid fa-message"></i>
-                                <strong>{{ user.tongsocau }}</strong> câu
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-            <div class="empty-state">
-                <i class="fa-solid fa-users-slash"></i>
-                <h3>Chưa có học sinh nào</h3>
-                <p>Học sinh sẽ xuất hiện ở đây khi họ đăng ký và bắt đầu học tập.</p>
-            </div>
-            {% endif %}
-        </div>
-    </main>
+    <!-- DATA -->
+    <script id="users-data" type="application/json">
+        {{ user_data|tojson|safe }}
+    </script>
 
     <script>
-        function filterTable() {
-            const input = document.getElementById('searchInput');
-            const filter = input.value.toLowerCase();
-            const table = document.getElementById('studentTable');
-            const rows = table.getElementsByTagName('tr');
+        // --- UI LOGIC ---
+        function toggleSidebar() {
+            const sb = document.getElementById('sidebar');
+            const ov = document.getElementById('overlay');
+            sb.classList.toggle('active');
+            ov.classList.toggle('active');
 
-            for (let i = 1; i < rows.length; i++) {
-                const cells = rows[i].getElementsByTagName('td');
-                const studentName = cells[0].textContent.toLowerCase();
-
-                if (studentName.includes(filter)) {
-                    rows[i].style.display = '';
-                } else {
-                    rows[i].style.display = 'none';
-                }
+            // Show close btn on mobile
+            if (window.innerWidth <= 1024) {
+                document.getElementById('mobileClose').style.display = sb.classList.contains('active') ? 'block' : 'none';
             }
         }
+
+        function switchTab(name, btn) {
+            document.getElementById('tab-dashboard').style.display = name === 'dashboard' ? 'block' : 'none';
+            document.getElementById('tab-students').style.display = name === 'students' ? 'block' : 'none';
+
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Auto close on mobile
+            if (window.innerWidth <= 1024) {
+                document.getElementById('sidebar').classList.remove('active');
+                document.getElementById('overlay').classList.remove('active');
+            }
+        }
+
+        // --- FILTERING ---
+        function filterTable() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('.table-row');
+            rows.forEach(r => {
+                const txt = r.innerText.toLowerCase();
+                r.style.display = txt.includes(term) ? '' : 'none';
+            });
+        }
+
+        function setFilter(lvl, btn) {
+            document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const rows = document.querySelectorAll('.table-row');
+            rows.forEach(r => {
+                if (lvl === 'all') r.style.display = '';
+                else {
+                    const html = r.innerHTML;
+                    r.style.display = html.includes('badge-' + lvl.toLowerCase()) ? '' : 'none';
+                }
+            });
+        }
+
+        // --- MODAL & CHARTS ---
+        const users = JSON.parse(document.getElementById('users-data').textContent);
+
+        function showStudentDetails(id) {
+            const u = users.find(x => x.id === id);
+            if (!u) return;
+
+            document.getElementById('modalName').textContent = u.tenhocsinh;
+
+            const tbody = document.getElementById('modalTableBody');
+            tbody.innerHTML = '';
+
+            const subjects = [
+                { name: 'Toán', key: 'toan', color: 'primary' },
+                { name: 'Lý', key: 'ly', color: 'warning' },
+                { name: 'Hóa', key: 'hoa', color: 'success' },
+                { name: 'Sinh', key: 'sinh', color: 'danger' }
+            ];
+
+            subjects.forEach(sub => {
+                const lvl = u['nangluc' + sub.key];
+                const count = u['socau' + sub.key];
+                const reason = u['lydo' + sub.key] || "Chưa có dữ liệu đánh giá đầy đủ.";
+
+                // Color mapping for badge
+                let badgeClass = 'badge-tb';
+                if (lvl === 'Gioi') badgeClass = 'badge-gioi';
+                if (lvl === 'Kha') badgeClass = 'badge-kha';
+                if (lvl === 'Yeu') badgeClass = 'badge-yeu';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight:700;">${sub.name}</td>
+                    <td><span class="badge ${badgeClass}">${lvl || 'TB'}</span></td>
+                    <td><b>${count}</b> câu</td>
+                    <td>
+                        <div class="ai-tag"><i class="fa-solid fa-robot"></i> AI Analysis</div>
+                        <div class="reason-cell">"${reason}"</div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const modal = document.getElementById('detailModal');
+            modal.classList.add('open');
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('open');
+        }
+
+        // Charts
+        document.addEventListener('DOMContentLoaded', () => {
+            const levels = ['Gioi', 'Kha', 'TB', 'Yeu'];
+            const getData = (k) => levels.map(l => users.filter(u => u[k] === l).length);
+
+            new Chart(document.getElementById('capacityChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Giỏi', 'Khá', 'TB', 'Yếu'],
+                    datasets: [
+                        { label: 'Toán', data: getData('nangluctoan'), backgroundColor: '#1e40af' },
+                        { label: 'Lý', data: getData('nanglucly'), backgroundColor: '#d97706' },
+                        { label: 'Hóa', data: getData('nangluchoa'), backgroundColor: '#059669' },
+                        { label: 'Sinh', data: getData('nanglucsinh'), backgroundColor: '#dc2626' }
+                    ]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+            });
+
+            const allAvgs = levels.map(l =>
+                users.filter(u => u.nangluctoan === l).length + users.filter(u => u.nanglucly === l).length +
+                users.filter(u => u.nangluchoa === l).length + users.filter(u => u.nanglucsinh === l).length
+            );
+
+            new Chart(document.getElementById('pieChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Giỏi', 'Khá', 'TB', 'Yếu'],
+                    datasets: [{
+                        data: allAvgs,
+                        backgroundColor: ['#059669', '#2563eb', '#f59e0b', '#dc2626']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        });
     </script>
 </body>
 
