@@ -174,11 +174,11 @@ def retrieve_context(query, top_k=3):
 
 # ================== ĐÁNH GIÁ NĂNG LỰC ==================
 def evaluate_student_level(history):
-    recent_questions = "\n".join([msg for msg in history[-10:] if msg.startswith("👧 Học sinh:")])
+    recent_questions = "\n".join([msg for msg in history[-5:] if msg.startswith("👧 Học sinh:")])
     prompt = f"""
     Bạn là một **Giáo viên Khoa học Tự nhiên Song ngữ (Anh – Việt)**, có nhiệm vụ **đánh giá năng lực học tập và khả năng tự học của học sinh** dựa trên lịch sử câu hỏi gần đây.
 
-    Dưới đây là **10 câu hỏi gần nhất của học sinh**:
+    Dưới đây là **5 câu hỏi gần nhất của học sinh**:
     {recent_questions}
 
     ### 🎯 Yêu cầu:
@@ -614,7 +614,7 @@ def chat():
     
     # 🔍 Retrieve RAG context
     related_context = retrieve_context(user_message)
-    recent_history = "\n".join(current_history[-10:])
+    recent_history = "\n".join(current_history[-5:])
 
     # Get subject-specific level
     student_level = getattr(user, subject_data['level_col'])
@@ -739,8 +739,8 @@ def chat():
         new_count = current_count + 1
         setattr(user, subject_data['counter_col'], new_count)
         
-        # Check if we need to assess this subject (every 10 questions)
-        if new_count % 10 == 0:
+        # Check if we need to assess this subject (every 5 questions)
+        if new_count % 5 == 0:
             # Assess THIS subject only
             new_level, lydo = evaluate_student_level(current_history)
             setattr(user, subject_data['level_col'], new_level)

@@ -52,7 +52,7 @@ Mỗi gia sư đều có giao diện thiết kế riêng, tích hợp song ngữ
 
 3.2. Công nghệ Adaptive Learning (Học tập thích ứng cá nhân hóa hoàn toàn)
 Đây là viên ngọc quý nhất và là điểm đột phá làm nên sự khác biệt của dự án. Thực tế giáo dục cho thấy "Một chiếc áo không thể vừa với mọi người". Hệ thống của chúng tôi sở hữu cơ chế đánh giá động (Dynamic Assessment):
-- Chu kỳ đánh giá: Cứ sau mỗi 10 tương tác/câu hỏi giữa học sinh và hệ thống, AI nền (Background AI) sẽ tự chạy một tiến trình phân tích lịch sử hội thoại.
+- Chu kỳ đánh giá: Cứ sau mỗi 5 tương tác/câu hỏi giữa học sinh và hệ thống, AI nền (Background AI) sẽ tự chạy một tiến trình phân tích lịch sử hội thoại.
 - Chấm điểm năng lực: AI phân loại trình độ học sinh theo 4 cấp độ: Giỏi, Khá, Trung bình, Yếu đối với từng bộ môn riêng biệt.
 - Thay đổi hành vi sư phạm: Dựa vào kết quả trên, Gia sư AI lập tức thay đổi phương thức tiếp cận:
   + Nếu học sinh Yếu: AI sẽ dùng ngôn từ đơn giản nhất, lấy ví dụ từ đời sống hàng ngày, giảm thiểu thuật ngữ học thuật phức tạp, và chia nhỏ vấn đề thành các câu hỏi siêu nhỏ (micro-learning).
