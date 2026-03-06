@@ -375,6 +375,25 @@ highlight_terms = {
 }
 
 
+# ================== INJECT USER INFO ==================
+@app.context_processor
+def inject_user():
+    """Inject current user info into all templates."""
+    user_info = None
+    if 'user_id' in session:
+        user = db.session.get(NguoiDung, session['user_id'])
+        if user:
+            user_info = {
+                'id': user.id,
+                'tendangnhap': user.tendangnhap,
+                'tenhocsinh': user.tenhocsinh or user.tendangnhap,
+                'nangluctoan': user.nangluctoan or 'TB',
+                'nanglucly': user.nanglucly or 'TB',
+                'nangluchoa': user.nangluchoa or 'TB',
+                'nanglucsinh': user.nanglucsinh or 'TB',
+            }
+    return dict(current_user=user_info)
+
 # ================== ROUTES ==================
 @app.route('/register', methods=['GET', 'POST'])
 def register():

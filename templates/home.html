@@ -127,6 +127,368 @@
             background: #fecaca;
         }
 
+        /* ===== USER PROFILE WIDGET ===== */
+        .user-profile-wrapper {
+            position: relative;
+        }
+
+        .user-profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 12px 6px 6px;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
+            border: 2px solid #c7d2fe;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            color: var(--text-main);
+        }
+
+        .user-profile-btn:hover {
+            border-color: var(--primary-blue);
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+        }
+
+        .user-name-display {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--dark-blue);
+            max-width: 130px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .profile-chevron {
+            font-size: 0.7rem;
+            color: var(--text-light);
+            transition: transform 0.3s ease;
+        }
+
+        .user-profile-wrapper.active .profile-chevron {
+            transform: rotate(180deg);
+        }
+
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            width: 280px;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-8px) scale(0.97);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 200;
+            overflow: hidden;
+        }
+
+        .user-profile-wrapper.active .profile-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .dropdown-header {
+            padding: 20px 20px 16px;
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            text-align: center;
+        }
+
+        .dropdown-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.4rem;
+            margin: 0 auto 10px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .dropdown-name {
+            color: white;
+            font-weight: 700;
+            font-size: 1.05rem;
+            margin-bottom: 2px;
+        }
+
+        .dropdown-username {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .dropdown-body {
+            padding: 12px 16px;
+        }
+
+        .dropdown-levels {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .level-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            background: #f8fafc;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+
+        .level-icon {
+            font-size: 1rem;
+        }
+
+        .level-label {
+            color: var(--text-light);
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .level-badge {
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .level-badge.gioi {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .level-badge.kha {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .level-badge.tb {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .level-badge.yeu {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .dropdown-footer {
+            padding: 12px 16px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .dropdown-logout {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .dropdown-logout:hover {
+            background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+        }
+
+        /* Mobile hamburger */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            color: var(--text-main);
+            font-size: 1.3rem;
+        }
+
+        /* Mobile slide-in menu overlay */
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 300;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .mobile-menu-overlay.active {
+            opacity: 1;
+        }
+
+        .mobile-menu-panel {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: min(300px, 80vw);
+            height: 100%;
+            background: white;
+            z-index: 301;
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .mobile-menu-panel.active {
+            right: 0;
+        }
+
+        .mobile-menu-header {
+            padding: 24px 20px 20px;
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            text-align: center;
+        }
+
+        .mobile-menu-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.6rem;
+            margin: 0 auto 12px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .mobile-menu-name {
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 2px;
+        }
+
+        .mobile-menu-username {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+        }
+
+        .mobile-menu-body {
+            padding: 16px 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .mobile-levels-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .mobile-levels-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .mobile-nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .mobile-nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .mobile-nav-link:hover {
+            background: #f1f5f9;
+        }
+
+        .mobile-nav-link i {
+            width: 20px;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .mobile-menu-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .mobile-close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .mobile-close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
         /* Hero Section */
         .hero {
             text-align: center;
@@ -359,6 +721,36 @@
             .cta-decoration {
                 display: none;
             }
+
+            /* Hide desktop nav items, show hamburger */
+            .nav-actions .btn-games,
+            .nav-actions .user-profile-wrapper {
+                display: none;
+            }
+
+            .mobile-menu-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .mobile-menu-overlay {
+                display: block;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 12px 16px;
+            }
+
+            .logo-text h1 {
+                font-size: 1rem;
+            }
+
+            .logo-text span {
+                font-size: 0.7rem;
+            }
         }
 
         /* Footer Styles */
@@ -549,9 +941,119 @@
             <a href="{{ url_for('games') }}" class="btn-games">
                 <span><i class="fa-solid fa-gamepad"></i></span> Giải trí
             </a>
-            <a href="{{ url_for('logout') }}" class="btn-logout">Đăng xuất</a>
+
+            {% if current_user %}
+            <!-- Desktop User Profile -->
+            <div class="user-profile-wrapper" id="userProfileWrapper">
+                <div class="user-profile-btn" id="userProfileBtn">
+                    <div class="user-avatar">{{ current_user.tenhocsinh[0]|upper }}</div>
+                    <span class="user-name-display">{{ current_user.tenhocsinh }}</span>
+                    <i class="fa-solid fa-chevron-down profile-chevron"></i>
+                </div>
+                <div class="profile-dropdown">
+                    <div class="dropdown-header">
+                        <div class="dropdown-avatar">{{ current_user.tenhocsinh[0]|upper }}</div>
+                        <div class="dropdown-name">{{ current_user.tenhocsinh }}</div>
+                        <div class="dropdown-username">@{{ current_user.tendangnhap }}</div>
+                    </div>
+                    <div class="dropdown-body">
+                        <div class="dropdown-levels">
+                            <div class="level-item">
+                                <span class="level-icon">🧮</span>
+                                <span class="level-label">Toán</span>
+                                <span class="level-badge {{ current_user.nangluctoan|lower }}">{{
+                                    current_user.nangluctoan }}</span>
+                            </div>
+                            <div class="level-item">
+                                <span class="level-icon">⚛️</span>
+                                <span class="level-label">Lý</span>
+                                <span class="level-badge {{ current_user.nanglucly|lower }}">{{ current_user.nanglucly
+                                    }}</span>
+                            </div>
+                            <div class="level-item">
+                                <span class="level-icon">🧪</span>
+                                <span class="level-label">Hóa</span>
+                                <span class="level-badge {{ current_user.nangluchoa|lower }}">{{ current_user.nangluchoa
+                                    }}</span>
+                            </div>
+                            <div class="level-item">
+                                <span class="level-icon">🌿</span>
+                                <span class="level-label">Sinh</span>
+                                <span class="level-badge {{ current_user.nanglucsinh|lower }}">{{
+                                    current_user.nanglucsinh }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-footer">
+                        <a href="{{ url_for('logout') }}" class="dropdown-logout">
+                            <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Hamburger -->
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            {% else %}
+            <a href="{{ url_for('login') }}" class="btn-logout">Đăng nhập</a>
+            {% endif %}
         </div>
     </nav>
+
+    {% if current_user %}
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+    <div class="mobile-menu-panel" id="mobileMenuPanel">
+        <button class="mobile-close-btn" id="mobileCloseBtn">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="mobile-menu-header">
+            <div class="mobile-menu-avatar">{{ current_user.tenhocsinh[0]|upper }}</div>
+            <div class="mobile-menu-name">{{ current_user.tenhocsinh }}</div>
+            <div class="mobile-menu-username">@{{ current_user.tendangnhap }}</div>
+        </div>
+        <div class="mobile-menu-body">
+            <div class="mobile-levels-title">Năng lực học tập</div>
+            <div class="mobile-levels-grid">
+                <div class="level-item">
+                    <span class="level-icon">🧮</span>
+                    <span class="level-label">Toán</span>
+                    <span class="level-badge {{ current_user.nangluctoan|lower }}">{{ current_user.nangluctoan }}</span>
+                </div>
+                <div class="level-item">
+                    <span class="level-icon">⚛️</span>
+                    <span class="level-label">Lý</span>
+                    <span class="level-badge {{ current_user.nanglucly|lower }}">{{ current_user.nanglucly }}</span>
+                </div>
+                <div class="level-item">
+                    <span class="level-icon">🧪</span>
+                    <span class="level-label">Hóa</span>
+                    <span class="level-badge {{ current_user.nangluchoa|lower }}">{{ current_user.nangluchoa }}</span>
+                </div>
+                <div class="level-item">
+                    <span class="level-icon">🌿</span>
+                    <span class="level-label">Sinh</span>
+                    <span class="level-badge {{ current_user.nanglucsinh|lower }}">{{ current_user.nanglucsinh }}</span>
+                </div>
+            </div>
+            <div class="mobile-nav-links">
+                <a href="{{ url_for('home') }}" class="mobile-nav-link">
+                    <i class="fa-solid fa-home"></i> Trang chủ
+                </a>
+                <a href="{{ url_for('games') }}" class="mobile-nav-link">
+                    <i class="fa-solid fa-gamepad"></i> Trò chơi giải trí
+                </a>
+            </div>
+        </div>
+        <div class="mobile-menu-footer">
+            <a href="{{ url_for('logout') }}" class="dropdown-logout">
+                <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+            </a>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Flash Messages -->
     <div class="flash-container">
@@ -719,5 +1221,54 @@
             </div>
         </div>
     </footer>
+
+    <script>
+        // Desktop Profile Dropdown
+        const profileWrapper = document.getElementById('userProfileWrapper');
+        const profileBtn = document.getElementById('userProfileBtn');
+        if (profileBtn) {
+            profileBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                profileWrapper.classList.toggle('active');
+            });
+            document.addEventListener('click', function (e) {
+                if (profileWrapper && !profileWrapper.contains(e.target)) {
+                    profileWrapper.classList.remove('active');
+                }
+            });
+        }
+
+        // Mobile Menu
+        const mobileToggle = document.getElementById('mobileMenuToggle');
+        const mobileOverlay = document.getElementById('mobileMenuOverlay');
+        const mobilePanel = document.getElementById('mobileMenuPanel');
+        const mobileClose = document.getElementById('mobileCloseBtn');
+
+        function openMobileMenu() {
+            if (mobileOverlay && mobilePanel) {
+                mobileOverlay.style.display = 'block';
+                requestAnimationFrame(() => {
+                    mobileOverlay.classList.add('active');
+                    mobilePanel.classList.add('active');
+                });
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeMobileMenu() {
+            if (mobileOverlay && mobilePanel) {
+                mobileOverlay.classList.remove('active');
+                mobilePanel.classList.remove('active');
+                document.body.style.overflow = '';
+                setTimeout(() => {
+                    mobileOverlay.style.display = 'none';
+                }, 300);
+            }
+        }
+
+        if (mobileToggle) mobileToggle.addEventListener('click', openMobileMenu);
+        if (mobileClose) mobileClose.addEventListener('click', closeMobileMenu);
+        if (mobileOverlay) mobileOverlay.addEventListener('click', closeMobileMenu);
+    </script>
 
 </html>

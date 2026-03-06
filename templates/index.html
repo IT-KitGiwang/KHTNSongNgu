@@ -109,22 +109,86 @@
   <!-- Header -->
   <header class="bg-primary-blue text-white shadow-modern sticky top-0 z-50">
     <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-      <h1 class="text-[10px] xs:text-sm sm:text-lg md:text-xl font-bold leading-tight max-w-[70%]">
+      <h1 class="text-[10px] xs:text-sm sm:text-lg md:text-xl font-bold leading-tight max-w-[60%]">
         💬 ỨNG DỤNG MÔ HÌNH NGÔN NGỮ LỚN HỖ TRỢ HỌC SINH HỌC TẬP SONG NGỮ KHOA HỌC TỰ NHIÊN
       </h1>
-      <button id="menu-toggle" class="text-white hover:text-gray-200 focus:outline-none">
-        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
+      <div class="flex items-center gap-3">
+        {% if current_user %}
+        <div class="flex items-center gap-2 bg-white/15 rounded-full px-3 py-1.5 backdrop-blur-sm">
+          <div
+            class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold text-xs">
+            {{ current_user.tenhocsinh[0]|upper }}
+          </div>
+          <span class="text-white text-xs sm:text-sm font-semibold max-w-[80px] sm:max-w-[120px] truncate">{{
+            current_user.tenhocsinh }}</span>
+        </div>
+        {% endif %}
+        <button id="menu-toggle" class="text-white hover:text-gray-200 focus:outline-none">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
     </div>
   </header>
 
   <!-- Menubar Slide-in -->
   <nav id="menubar" class="fixed top-0 left-0 w-64 h-full bg-white shadow-modern z-50 flex flex-col">
+    {% if current_user %}
+    <!-- User Profile Section in Menu -->
+    <div class="bg-gradient-to-br from-blue-800 to-blue-600 p-5 text-center">
+      <div
+        class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-xl mx-auto mb-3 border-2 border-white/30">
+        {{ current_user.tenhocsinh[0]|upper }}
+      </div>
+      <div class="text-white font-bold text-base">{{ current_user.tenhocsinh }}</div>
+      <div class="text-blue-200 text-xs mt-1">@{{ current_user.tendangnhap }}</div>
+    </div>
+    <!-- Proficiency Levels -->
+    <div class="px-4 py-3 border-b border-gray-100">
+      <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Năng lực</div>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="flex items-center gap-2 px-2 py-1.5 bg-gray-50 rounded-lg text-xs">
+          <span>🧮</span><span class="text-gray-500">Toán</span>
+          <span class="ml-auto px-1.5 py-0.5 rounded text-[10px] font-bold
+            {% if current_user.nangluctoan == 'Gioi' %}bg-green-100 text-green-700
+            {% elif current_user.nangluctoan == 'Kha' %}bg-blue-100 text-blue-700
+            {% elif current_user.nangluctoan == 'Yeu' %}bg-red-100 text-red-700
+            {% else %}bg-yellow-100 text-yellow-700{% endif %}">{{ current_user.nangluctoan }}</span>
+        </div>
+        <div class="flex items-center gap-2 px-2 py-1.5 bg-gray-50 rounded-lg text-xs">
+          <span>⚛️</span><span class="text-gray-500">Lý</span>
+          <span class="ml-auto px-1.5 py-0.5 rounded text-[10px] font-bold
+            {% if current_user.nanglucly == 'Gioi' %}bg-green-100 text-green-700
+            {% elif current_user.nanglucly == 'Kha' %}bg-blue-100 text-blue-700
+            {% elif current_user.nanglucly == 'Yeu' %}bg-red-100 text-red-700
+            {% else %}bg-yellow-100 text-yellow-700{% endif %}">{{ current_user.nanglucly }}</span>
+        </div>
+        <div class="flex items-center gap-2 px-2 py-1.5 bg-gray-50 rounded-lg text-xs">
+          <span>🧪</span><span class="text-gray-500">Hóa</span>
+          <span class="ml-auto px-1.5 py-0.5 rounded text-[10px] font-bold
+            {% if current_user.nangluchoa == 'Gioi' %}bg-green-100 text-green-700
+            {% elif current_user.nangluchoa == 'Kha' %}bg-blue-100 text-blue-700
+            {% elif current_user.nangluchoa == 'Yeu' %}bg-red-100 text-red-700
+            {% else %}bg-yellow-100 text-yellow-700{% endif %}">{{ current_user.nangluchoa }}</span>
+        </div>
+        <div class="flex items-center gap-2 px-2 py-1.5 bg-gray-50 rounded-lg text-xs">
+          <span>🌿</span><span class="text-gray-500">Sinh</span>
+          <span class="ml-auto px-1.5 py-0.5 rounded text-[10px] font-bold
+            {% if current_user.nanglucsinh == 'Gioi' %}bg-green-100 text-green-700
+            {% elif current_user.nanglucsinh == 'Kha' %}bg-blue-100 text-blue-700
+            {% elif current_user.nanglucsinh == 'Yeu' %}bg-red-100 text-red-700
+            {% else %}bg-yellow-100 text-yellow-700{% endif %}">{{ current_user.nanglucsinh }}</span>
+        </div>
+      </div>
+    </div>
+    {% else %}
     <div class="flex justify-between items-center p-4 border-b">
       <h2 class="text-lg font-semibold text-primary-blue">🎯 Tính Năng</h2>
-      <button id="close-menu" class="text-gray-600 hover:text-gray-800">
+    </div>
+    {% endif %}
+    <div class="flex justify-end p-2">
+      <button id="close-menu" class="text-gray-600 hover:text-gray-800 p-2">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
@@ -281,7 +345,7 @@
 <footer class="bg-slate-900 border-t border-slate-800 text-slate-300 py-12 mt-auto">
   <div class="container mx-auto px-4">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-      
+
       <!-- Team Members -->
       <div class="text-center md:text-left">
         <h3 class="text-white text-lg font-bold mb-4 border-b-2 border-primary-blue inline-block pb-1">
@@ -289,28 +353,32 @@
         </h3>
         <ul class="space-y-3">
           <li class="flex items-center justify-center md:justify-start gap-3 group">
-            <span class="w-8 h-8 rounded-full bg-blue-900/50 flex items-center justify-center text-blue-400 font-bold text-xs ring-1 ring-blue-500/30 group-hover:bg-blue-600 group-hover:text-white transition-all">TL</span>
+            <span
+              class="w-8 h-8 rounded-full bg-blue-900/50 flex items-center justify-center text-blue-400 font-bold text-xs ring-1 ring-blue-500/30 group-hover:bg-blue-600 group-hover:text-white transition-all">TL</span>
             <div>
               <span class="text-xs text-slate-500 uppercase tracking-wider block">Trưởng nhóm</span>
               <span class="text-white font-medium group-hover:text-primary-blue transition-colors">Lê Quang Phúc</span>
             </div>
           </li>
           <li class="flex items-center justify-center md:justify-start gap-3 group">
-            <span class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 font-bold text-xs ring-1 ring-slate-700 group-hover:bg-emerald-600 group-hover:text-white transition-all">01</span>
+            <span
+              class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 font-bold text-xs ring-1 ring-slate-700 group-hover:bg-emerald-600 group-hover:text-white transition-all">01</span>
             <div>
               <span class="text-xs text-slate-500 uppercase tracking-wider block">Thành viên</span>
               <span class="text-slate-200 group-hover:text-emerald-400 transition-colors">Phùng Văn Hạnh</span>
             </div>
           </li>
           <li class="flex items-center justify-center md:justify-start gap-3 group">
-            <span class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 font-bold text-xs ring-1 ring-slate-700 group-hover:bg-purple-600 group-hover:text-white transition-all">02</span>
+            <span
+              class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 font-bold text-xs ring-1 ring-slate-700 group-hover:bg-purple-600 group-hover:text-white transition-all">02</span>
             <div>
               <span class="text-xs text-slate-500 uppercase tracking-wider block">Thành viên</span>
               <span class="text-slate-200 group-hover:text-purple-400 transition-colors">Hoàng Thị Nha</span>
             </div>
           </li>
           <li class="flex items-center justify-center md:justify-start gap-3 group">
-            <span class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 font-bold text-xs ring-1 ring-slate-700 group-hover:bg-pink-600 group-hover:text-white transition-all">03</span>
+            <span
+              class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 font-bold text-xs ring-1 ring-slate-700 group-hover:bg-pink-600 group-hover:text-white transition-all">03</span>
             <div>
               <span class="text-xs text-slate-500 uppercase tracking-wider block">Thành viên</span>
               <span class="text-slate-200 group-hover:text-pink-400 transition-colors">Nguyễn Thị Thương</span>
@@ -321,15 +389,20 @@
 
       <!-- Competition Info -->
       <div class="text-center flex flex-col items-center justify-center">
-        <div class="bg-gradient-to-br from-blue-900/40 to-slate-900 p-6 rounded-2xl border border-blue-500/20 shadow-lg relative overflow-hidden group hover:border-blue-500/40 transition-all duration-500">
-          <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
-          
-          <h3 class="text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-200 mb-2 uppercase tracking-tight">
+        <div
+          class="bg-gradient-to-br from-blue-900/40 to-slate-900 p-6 rounded-2xl border border-blue-500/20 shadow-lg relative overflow-hidden group hover:border-blue-500/40 transition-all duration-500">
+          <div
+            class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50">
+          </div>
+
+          <h3
+            class="text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-200 mb-2 uppercase tracking-tight">
             Cuộc Thi Sáng Tạo
           </h3>
           <p class="text-blue-400 font-bold uppercase tracking-widest text-sm mb-4">Với AI Trong Giáo Dục</p>
-          
-          <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-600/20 border border-blue-500/30 text-blue-300 text-sm font-semibold">
+
+          <div
+            class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-600/20 border border-blue-500/30 text-blue-300 text-sm font-semibold">
             <span>📅</span> Năm học 2025 - 2026
           </div>
         </div>
@@ -342,13 +415,18 @@
         </h3>
         <p class="text-slate-300 mb-2 font-medium">Trường THCS Trung Thành</p>
         <p class="text-slate-400 text-sm mb-4">Linh Hồ – Tuyên Quang</p>
-        
-        <a href="mailto:lequangphuctq81@gmail.com" class="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors bg-slate-800 px-4 py-2 rounded-lg border border-slate-700 hover:border-slate-500">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+
+        <a href="mailto:lequangphuctq81@gmail.com"
+          class="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors bg-slate-800 px-4 py-2 rounded-lg border border-slate-700 hover:border-slate-500">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+            </path>
+          </svg>
           <span class="text-sm">lequangphuctq81@gmail.com</span>
         </a>
       </div>
-      
+
     </div>
 
     <!-- Copyright -->
