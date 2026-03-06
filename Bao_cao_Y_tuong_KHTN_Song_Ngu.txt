@@ -1,35 +1,119 @@
-MÔ TẢ TỔNG QUAN Ý TƯỞNG PHẦN MỀM: KHTN SONG NGỮ
-Dự án tham dự: Cuộc Thi Sáng Tạo Với AI Trong Giáo Dục – Năm học 2025-2026
+BÁO CÁO DỰ ÁN THAM GIA CUỘC THI SÁNG TẠO VỚI AI TRONG GIÁO DỤC (NĂM HỌC 2025-2026)
 
-1. TÊN DỰ ÁN: KHTN Song Ngữ - Hệ thống gia sư AI thông minh tối ưu năng lực tự học.
+TÊN DỰ ÁN: KHTN SONG NGỮ - HỆ THỐNG GIA SƯ AI THÔNG MINH TỐI ƯU NĂNG LỰC TỰ HỌC
+Đơn vị công tác: Trường THCS Trung Thành – Linh Hồ, Tuyên Quang
+Nhóm phát triển: 
+- Lê Quang Phúc (Trưởng nhóm)
+- Phùng Văn Hạnh (Thành viên)
+- Hoàng Thị Nha (Thành viên)
+- Nguyễn Thị Thương (Thành viên)
 
-2. Ý TƯỞNG CỐT LÕI:
-Phát triển một "Gia sư ảo" chuyên biệt cho các môn Khoa học Tự nhiên (Toán, Lý, Hóa, Sinh) có khả năng thấu hiểu và thích ứng hoàn toàn với trình độ riêng biệt của từng học sinh. Ý tưởng trọng tâm là biến AI từ một công cụ tra cứu thụ động thành một người dẫn đường chủ động, kích thích sự tự chủ trong học tập của học sinh.
+========================================================================
+MỤC LỤC
+1. ĐẶT VẤN ĐỀ VÀ TÍNH CẤP THIẾT CỦA DỰ ÁN
+2. TỔNG QUAN VỀ DỰ ÁN "KHTN SONG NGỮ"
+3. CÁC TÍNH NĂNG SÁNG TẠO ĐỘT PHÁ VÀ GIẢI PHÁP CÔNG NGHỆ CHUYÊN SÂU
+   3.1. Hệ sinh thái Gia sư AI đa môn chuyên biệt (Toán, Lý, Hóa, Sinh)
+   3.2. Công nghệ Adaptive Learning (Học tập thích ứng liên tục)
+   3.3. Tích hợp RAG (Retrieval-Augmented Generation) chống ảo giác AI
+   3.4. Trợ lý "Prompt Engineering" ngầm - Phá bỏ rào cản công nghệ
+   3.5. Hệ thống Gamification và Phòng Trò chơi Giáo dục Mô phỏng
+   3.6. Hệ thống định danh và Theo dõi hồ sơ học tập (User Profile Tracking)
+   3.7. Giao diện (UI/UX) Glassmorphism đẳng cấp và Tương thích đa nền tảng
+4. KIẾN TRÚC HỆ THỐNG VÀ CÔNG NGHỆ ÁP DỤNG
+5. TÁC ĐỘNG XÃ HỘI VÀ HIỆU QUẢ GIÁO DỤC THỰC TIỄN
+6. ĐỊNH HƯỚNG PHÁT TRIỂN TRONG TƯƠNG LAI
+7. KẾT LUẬN
+========================================================================
 
-3. CÁC ĐIỂM NHẤN CHIẾN LƯỢC:
+PHẦN 1: ĐẶT VẤN ĐỀ VÀ TÍNH CẤP THIẾT CỦA DỰ ÁN
+Trong thời đại Cách mạng Công nghiệp lần thứ 4, Trí tuệ Nhân tạo (AI) đang định hình lại mọi lĩnh vực, đặc biệt là Giáo dục. Tuy nhiên, việc áp dụng AI vào trường học tại Việt Nam, nhất là ở khu vực nông thôn, thiểu số hay vùng núi (như Tuyên Quang), vẫn gặp nhiều rào cản. Học sinh hiện nay khi tiếp cận AI (như ChatGPT, Gemini) thường có xu hướng sử dụng sai mục đích: chỉ dùng để "hỏi xin đáp án" nhằm sao chép đối phó, dẫn đến sự thủ tiêu tư duy phản biện và làm thui chột khả năng tự học tự chủ.
 
-a. Học sinh tự chủ động học tập theo năng lực cá nhân:
-Phần mềm tạo ra môi trường học tập không áp lực, nơi học sinh có thể tự do đặt câu hỏi về bất kỳ khái niệm khoa học nào. AI không chỉ đưa ra đáp án mà đóng vai trò hướng dẫn, gợi mở vấn đề theo từng bước (step-by-step), giúp học sinh tự tư duy và tìm ra câu trả lời cho chính mình thay vì nhận lời giải có sẵn.
+Mặt khác, để AI thực sự giúp ích, học sinh cần có kỹ năng "Prompt Engineering" (kỹ năng đặt câu hỏi chính xác và cung cấp đủ ngữ cảnh). Hầu hết học sinh trung học cơ sở không sở hữu kỹ năng này, khiến AI trả lời chung chung hoặc không đúng trọng tâm bài học theo chuẩn của Bộ GD&ĐT. Thêm vào đó, chương trình Giáo dục Phổ thông 2018 chú trọng vào môn Khoa học Tự nhiên (KHTN) với yêu cầu tích hợp tiếng Anh (KHTN Song ngữ), tạo ra áp lực kép cho cả thầy và trò khi thiếu đi môi trường rèn luyện ngoài giờ lên lớp.
 
-b. Cơ chế Adaptive Learning (AI tự động điều chỉnh theo năng lực):
-Đây là điểm đột phá của phần mềm. Cứ sau mỗi 10 câu hỏi, hệ thống AI sẽ tự động phân tích lịch sử hội thoại để đánh giá lại năng lực của học sinh (Giỏi - Khá - Trung bình - Yếu). Dựa trên kết quả này, AI sẽ tự động thay đổi:
-- Độ khó của từ vựng tiếng Anh học thuật.
-- Cách diễn giải khái niệm (đơn giản hóa cho HS yếu, nâng cao chuyên sâu cho HS giỏi).
-- Phương pháp sư phạm thích hợp (nhấn mạnh hiện tượng cho Lý, logic cho Toán, cơ chế cho Hóa/Sinh).
+Nhận thấy khoảng trống rất lớn giữa tiềm năng vĩ đại của AI và cách khai thác giáo dục thực tiễn chưa hiệu quả, nhóm chúng tôi đã quyết định phát triển dự án phần mềm: "KHTN SONG NGỮ - Hệ thống gia sư AI thông minh tối ưu năng lực tự học". Phần mềm ra đời nhằm giải quyết triệt để vấn đề "học vẹt cùng AI", biến cỗ máy AI vô tri thành một người thầy tận tâm, thấu hiểu năng lực từng em học sinh, và dẫn dắt các em tự tìm ra chân lý khoa học.
 
-c. Hỗ trợ tối ưu cho học sinh "prompt" chưa tốt:
-Thông thường, để AI trả lời hay, người dùng cần có kỹ năng viết câu lệnh (prompt) phức tạp. Tuy nhiên, phần mềm của chúng tôi giải quyết vấn đề này bằng cách tích hợp "Prompt Engineering" ngầm. Hệ thống tự động bù đắp các thiếu khuyết trong câu hỏi của học sinh:
-- Nếu học sinh hỏi ngắn, thiếu ngữ cảnh, AI sẽ dựa vào công nghệ RAG (truy xuất từ kho PDF tài liệu chính thống của giáo viên) và lịch sử trò chuyện để tự hiểu con đang gặp khó khăn ở đâu.
-- AI chủ động dẫn dắt, đặt câu hỏi ngược lại để xác định rõ yêu cầu, giúp những học sinh dù kỹ năng đặt câu hỏi còn yếu vẫn nhận được sự hỗ trợ chất lượng cao như chuyên gia.
+PHẦN 2: TỔNG QUAN VỀ DỰ ÁN "KHTN SONG NGỮ"
+KHTN Song Ngữ là một nền tảng học tập trực tuyến thông minh, đóng vai trò như một hệ sinh thái giáo dục thu nhỏ. Tại đây, mỗi học sinh được cấp một tài khoản định danh riêng biệt và được hỗ trợ bởi 4 "Gia sư AI" chuyên trách tư vấn cho 4 phân môn cốt lõi: Toán học, Vật lý, Hóa học, và Sinh học. 
 
-4. GIÁ TRỊ GIÁO DỤC:
-- Xóa bỏ rào cản về kỹ năng sử dụng công nghệ: Học sinh chỉ cần hỏi tự nhiên nhất, AI sẽ làm phần việc kỹ thuật khó khăn còn lại.
-- Hình thành thói quen tự học tự chủ: Khi nội dung luôn vừa sức (do AI đã điều chỉnh), học sinh sẽ cảm thấy hứng thú và tự tin hơn trong việc khám phá kiến thức mới.
-- Song ngữ tự nhiên: Học sinh được tiếp cận thuật ngữ khoa học Anh - Việt một cách thẩm thấu, chuẩn bị nền tảng vững chắc cho các cấp học cao hơn.
+Khác với các ứng dụng giải bài tập thông thường (như Photomath, QANDA), "KHTN Song Ngữ" hoạt động trên nguyên tắc sư phạm cốt lõi: KHÔNG ĐƯA ĐÁP ÁN TRỰC TIẾP. Thay vì giải bài hộ, AI được huấn luyện (fine-tuned và prompted system) để đóng vai trò người dẫn dắt (Socratic method). AI phân tích lỗi sai, đưa ra gợi ý từng bước (step-by-step), và kích thích học sinh tự suy luận. Hơn thế nữa, nền tảng khéo léo lồng ghép thuật ngữ Tiếng Anh khoa học vào câu trả lời, giúp học sinh thẩm thấu ngoại ngữ một cách tự nhiên.
 
-5. KẾT LUẬN:
-"KHTN Song Ngữ" không chỉ là một phần mềm giải bài tập, mà là một hệ sinh thái học tập thông minh, nơi AI thấu hiểu học sinh hơn cả một giáo viên truyền thống có thể làm cho hàng chục em trong lớp. Phần mềm chính là cánh cửa đưa học sinh đến với phương thức học tập chủ động của thế kỷ 21.
+Dự án không chỉ tập trung vào trí tuệ nhân tạo mà còn kết hợp tư duy Gamification (game hóa) bằng cách tích hợp một phòng thí nghiệm ảo và trò chơi học tập tương tác, giúp việc học KHTN không còn là những con chữ khô khan, mà trở thành một chuyến phiêu lưu đầy màu sắc.
 
----
-© 2026 Nhóm phát triển KHTN Song Ngữ
-Trường THCS Trung Thành – Tuyên Quang
+PHẦN 3: CÁC TÍNH NĂNG SÁNG TẠO ĐỘT PHÁ VÀ GIẢI PHÁP CÔNG NGHỆ CHUYÊN SÂU
+
+3.1. Hệ sinh thái Gia sư AI đa môn chuyên biệt (Toán, Lý, Hóa, Sinh)
+Hệ thống được thiết kế với 4 module gia sư độc lập, mỗi gia sư được "vào vai" (persona) một chuyên gia trong lĩnh vực tương ứng:
+- Gia sư Toán học: Tư duy logic, phân tích từng bước giải thuật sắc bén, nhấn mạnh vào định lý và tiên đề.
+- Gia sư Vật lý: Tập trung vào bản chất hiện tượng, cung cấp ví dụ thực tiễn xung quanh cuộc sống để giải thích công thức.
+- Gia sư Hóa học: Phân tích sâu sắc sự chuyển hóa vật chất, phương trình phản ứng và cơ chế vi mô.
+- Gia sư Sinh học: Khám phá thế giới sống, từ gen, tế bào đến hệ sinh thái rộng lớn.
+Mỗi gia sư đều có giao diện thiết kế riêng, tích hợp song ngữ, giúp tạo cảm giác chân thực và phân luồng tư duy học tập cho học sinh rõ ràng.
+
+3.2. Công nghệ Adaptive Learning (Học tập thích ứng cá nhân hóa hoàn toàn)
+Đây là viên ngọc quý nhất và là điểm đột phá làm nên sự khác biệt của dự án. Thực tế giáo dục cho thấy "Một chiếc áo không thể vừa với mọi người". Hệ thống của chúng tôi sở hữu cơ chế đánh giá động (Dynamic Assessment):
+- Chu kỳ đánh giá: Cứ sau mỗi 10 tương tác/câu hỏi giữa học sinh và hệ thống, AI nền (Background AI) sẽ tự chạy một tiến trình phân tích lịch sử hội thoại.
+- Chấm điểm năng lực: AI phân loại trình độ học sinh theo 4 cấp độ: Giỏi, Khá, Trung bình, Yếu đối với từng bộ môn riêng biệt.
+- Thay đổi hành vi sư phạm: Dựa vào kết quả trên, Gia sư AI lập tức thay đổi phương thức tiếp cận:
+  + Nếu học sinh Yếu: AI sẽ dùng ngôn từ đơn giản nhất, lấy ví dụ từ đời sống hàng ngày, giảm thiểu thuật ngữ học thuật phức tạp, và chia nhỏ vấn đề thành các câu hỏi siêu nhỏ (micro-learning).
+  + Nếu học sinh Giỏi: AI sẽ tăng độ khó, mở rộng vấn đề, đặt ra các câu hỏi mở để thử thách tư duy đa chiều, và sử dụng tần suất từ vựng tiếng Anh chuyên ngành dày đặc hơn.
+Điều này mang lại một môi trường học tập vô cùng nhân văn: Học sinh yếu không bị choáng ngợp, học sinh giỏi không bị nhàm chán.
+
+3.3. Tích hợp kiến trúc RAG (Retrieval-Augmented Generation) để chống ảo giác (Hallucination)
+Một yếu điểm lớn của AI (đặc biệt là các mô hình LLM) là khả năng "bịa chuyện" hoặc cung cấp kiến thức sai lệch. Để đảm bảo 100% độ chính xác cho nội dung dạy học, chúng tôi đã tích hợp công nghệ RAG tiên tiến.
+- Chúng tôi thiết lập Intake Pipeline từ các văn bản chuẩn của Bộ GD&ĐT (Sách giáo khoa, tài liệu chuẩn). Những tài liệu này được vector hóa (Vectorized embeddings) và đưa vào Vector Database (ChromaDB).
+- Khi học sinh đặt câu hỏi, hệ thống sẽ ưu tiên truy xuất tìm kiếm kiến thức từ kho dữ liệu vector này trước, sau đó mới dùng LLM để tổng hợp thành câu trả lời. Nhờ vậy, AI của "KHTN Song Ngữ" luôn trả lời chính xác, bám sát sách giáo khoa, không bị lan man hay sai lệch chuyên môn khoa học.
+
+3.4. Trợ lý "Prompt Engineering" ngầm - Phá bỏ rào cản công nghệ
+Rất nhiều học sinh, đặc biệt ở lứa tuổi THCS, chỉ nhập những câu hỏi cộc lốc như "Bài 5 SGK", "Tính gia tốc kiểu gì", hay "Không hiểu Hóa". Với ChatGPT thông thường, kết quả trả về sẽ vô giá trị.
+Phần mềm KHTN Song Ngữ giải quyết triệt để rào cản này bằng lớp "Middle-ware Prompting":
+- Khi học sinh nhập nội dung, hệ thống phần mềm (Backend) sẽ tự động bọc (wrap) câu hỏi của học sinh bằng những Prompt chuyên sâu (ngữ cảnh về người học, trình độ định giá từ Adaptive Learning, lĩnh vực đang học).
+- AI được huấn luyện cách xử lý khi học sinh hỏi thiếu dữ kiện: Nó sẽ không trả lời bừa, mà phản hồi bằng một câu hỏi gợi mở, hướng dẫn học sinh cách cung cấp thêm thông tin (VD: "Chào bạn, để tính gia tốc, chúng ta cần biết vận tốc vòng. Bạn đã có số đo đó chưa, hay để thầy gợi ý cách tìm nhé?"). Điều này giúp định hình lại kỹ năng giao tiếp và tư duy mạch lạc cho học sinh.
+
+3.5. Hệ thống Gamification và Phòng Trò Chơi Giáo Dục Mô Phỏng (Scratch Integration)
+Để chống lại sự nhàm chán, KHTN Song Ngữ tích hợp toàn diện 4 phòng máy Trò chơi học tập song hành cùng 4 môn học: "Phòng Game Toán, Lý, Hóa, Sinh".
+- Chúng tôi đã nhúng các dự án đồ họa, mô phỏng thí nghiệm, và trò chơi tương tác lập trình bằng nền tảng Scratch của MIT vào trực tiếp ứng dụng.
+- Ưu điểm: Học sinh có thể trực tiếp kéo thả các quả cân để học về khối lượng, nối ráp nguyên tử để tạo phân tử H2O, hoặc du hành vào mạch máu để tìm hiểu Tế bào. Sự kết hợp giữa Text-based AI và Interactive Gamification tạo ra một không gian sinh thái giáo dục toàn diện, kích thích sóng não và năng lực ghi nhớ lâu dài.
+
+3.6. Hệ thống định danh và Theo dõi hồ sơ học tập (User Profile Tracking)
+- Quản trị cá nhân hóa: Hệ thống có mô-đun Login/Register (Đăng nhập/Đăng ký) an toàn. Thông tin cá nhân (tendangnhap, tenhocsinh) được lưu trữ vào Cơ sở dữ liệu.
+- Theo dõi năng lực liên tục (Proficiency Tracker): Nhờ Context Processor ưu việt trong mã nguồn, hệ thống lưu vết trình độ Toán, Lý, Hóa, Sinh của học sinh trọn đời. 
+- Mọi trang trong phần mềm đều có thanh điều hướng (Header) thông minh hiển thị Avatar Học sinh (glassmorphism pill). Người học chỉ cần bấm vào avatar để thấy một dạng "Học bạ AI số hóa", bao gồm tên, cấp độ ở từng môn (bằng các huy hiệu màu sắc bắt mắt). Sự minh bạch hóa năng lực này tạo động lực to lớn giúp các em phấn đấu thăng hạng từ Yếu lên Khá, từ Khá lên Giỏi.
+
+3.7. Giao diện (UI/UX) Glassmorphism đẳng cấp và Tương thích đa nền tảng
+Chúng tôi không thỏa hiệp với một giao diện tẻ nhạt. Dự án sử dụng phong cách thiết kế hiện đại nhất 2025:
+- Thiết kế Glassmorphism: Sử dụng các lớp nền bán trong suốt (backdrop-filter: blur), gradient mượt mà lấy cảm hứng từ thiên nhiên (xanh dương sâu thẳm, xanh lục bảo, cam hoàng hôn, tím thiên hà) để không gian ảo không gây mỏi mắt.
+- Responsive UX tuyệt đối: Nhờ TailwindCSS, phần mềm hoạt động mượt mà trên mọi thiết bị màn hình (Desktop, Tablet, Mobile). Hệ thống có menu điều hướng thông minh (Hamburger slide-in panel đối với Mobile, Dropdown card đối với Desktop), giúp học sinh học ở bất cứ đâu, kể cả trên chiếc điện thoại cũ của phụ huynh.
+- Vi hạt hoạt hình (Micro-animations): Các hiệu ứng hover (lướt chuột), chuyển động slide khi mở bảng điều khiển diễn ra vô cùng tối ưu và mượt mà, định hình nên một phần mềm dạng "Premium" thay vì những thiết kế học đường truyền thống, giúp giữ chân người dùng.
+
+PHẦN 4: KIẾN TRÚC HỆ THỐNG VÀ CÔNG NGHỆ ÁP DỤNG
+Dự án được kĩ sư hóa cẩn thận để đảm bảo chịu tải, tối ưu và linh hoạt bảo trì:
+- Ngôn ngữ Lập trình Cốt lõi: Lớp Backend phát triển trên nền Python, framework Flask cực kì nhẹ nhàng và mạnh mẽ.
+- Font-end Stack: HTML5 ngữ nghĩa, Jinja2 Templating, kết hợp linh kiện Tailwind CSS cho khả năng tùy biến và chuẩn hóa mã màu, JavaScript xử lý tương tác DOM bất đồng bộ.
+- Phân luồng Dữ liệu (State Management): Tối ưu Sessions và Flask Context Processor để quản lý trạng thái phiên đăng nhập của học sinh trên mọi route một cách duy nhất mà không bị duplicate code.
+- Ngôn ngữ mô hình lớn (LLM API Integration): Middleware API Call xử lý luồng prompt/response với các mô hình ngôn ngữ lớn mạnh mẽ nhất (Google Gemini/OpenAI). Cơ chế Chunking và Embedding văn bản luật định/SGK để nhúng RAG thông minh bằng thư viện chuyên dùng.
+
+PHẦN 5: TÁC ĐỘNG XÃ HỘI VÀ HIỆU QUẢ GIÁO DỤC THỰC TIỄN
+5.1. Với Học Sinh: 
+Rèn luyện tính chủ động. Giải phóng áp lực học tập nhờ cơ chế thích ứng. Giúp học sinh vùng sâu vùng xa tiếp xúc với tiếng Anh tiêu chuẩn như học sinh trường Quốc tế. Hình thành "kỹ năng của tương lai" (tương tác đúng cách với AI).
+5.2. Với Giáo Viên: 
+Là trợ giảng số không mệt mỏi, gánh vác việc giải đáp các câu hỏi vụn vặt ngoài giờ học, giúp giáo viên có thêm thời gian để chuẩn bị bài chuyên sâu và dành tâm huyết đào tạo đạo đức, năng lực mềm cho học trò. Có thể xuất dữ liệu đánh giá (chỉ số Khá/Giỏi) từ AI để theo dõi sát sao sự tiến bộ của lớp.
+5.3. Với Gia đình và Xã hội:
+Giảm gánh nặng chi phí học thêm đắt đỏ (lên đến hàng triệu đồng/tháng). Với một chiếc smartphone sinh hoạt có mạng, học sinh có ngay cơ hội tiếp cận tri thức đẳng cấp chuyên gia. Xoá nhòa khoảng cách vùng miền trong chuyển đổi số giáo dục căn bản và toàn diện.
+
+PHẦN 6: ĐỊNH HƯỚNG PHÁT TRIỂN TRONG TƯƠNG LAI
+Phiên bản hiện tại hoàn toàn chứng minh được sự khả thi của một nền tảng học tập chủ động hóa. Trong giai đoạn năm 2026-2027, nhóm đặt tham vọng:
+1. Mở rộng Hệ tri thức RAG: Đưa thêm hàng ngàn văn bản, kho đề thi, bộ tham khảo quốc gia vào Vector Database, mở rộng ra cả các môn Khoa học Xã hội (Lịch sử, Địa lý).
+2. Xây dựng Native Mobile App: Đóng gói toàn bộ nền tảng Web thành các ứng dụng Android / iOS nguyên bản thông qua React Native hoặc PWA nhằm giảm độ trễ tối đa, hỗ trợ lưu cache học Offline một phần.
+3. Học bổng và Vinh Danh AI: Tích điểm (Coint) từ các bài trắc nghiệm nhanh sau giờ học do AI sinh ra tự động để quy đổi thành phần thưởng vật lý hoặc huy hiệu số hóa toàn nền tảng.
+4. Quản lý phụ huynh/Giáo viên: Mở thêm portal (cổng) dành cho tài khoản phụ huynh và giáo viên để liên kết theo dõi biểu đồ tăng trưởng kỹ năng của con em mình.
+
+PHẦN 7: KẾT LUẬN
+"KHTN Song Ngữ - Hệ thống gia sư AI thông minh" là kết quả của sự đầu tư chất xám nghiêm túc, đam mê công nghệ và khát khao cống hiến cho giáo dục nước nhà. Dự án không chỉ bám sát xu hướng Chuyển đổi số Quốc gia mà còn khai thác những công nghệ định hình tương lai ngay lúc này (RAG, LLM, Adaptive Learning) để phục vụ thế hệ măng non. Nó xóa bỏ hình ảnh về một AI "lười biếng, làm hộ", thiết lập một chuẩn mực mới trong ứng dụng AI tại trường phổ thông: AI Là Người Bạn Đồng Hành Dẫn Lối, Khai Sáng Năng Lực Tự Học Của Trẻ. 
+
+Chúng tôi tin rằng, tiềm năng thật sự của Công Nghệ chỉ toả sáng khi nó nằm trong tay một tư duy sư phạm đúng đắn.
+
+--- 
+Báo cáo hoàn thành ngày 07/03/2026.
+Bản quyền thuộc Nhóm phát triển KHTN Song Ngữ - THCS Trung Thành.
+Tuyên Quang, Việt Nam.

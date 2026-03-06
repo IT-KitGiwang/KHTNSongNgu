@@ -23,8 +23,8 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 
-GENERATION_MODEL = 'gemma-3-4b-it'
-EMBEDDING_MODEL = 'text-embedding-004'
+GENERATION_MODEL = os.getenv('GENERATION_MODEL', 'gemma-3-4b-it')
+EMBEDDING_MODEL = os.getenv('EMBEDDING_MODEL', 'text-embedding-004')
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
