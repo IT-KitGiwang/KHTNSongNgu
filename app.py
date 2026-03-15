@@ -1,221 +1,140 @@
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, send_file
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, send_file, Response
 from werkzeug.security import generate_password_hash, check_password_hash
-import google.generativeai as genai
-import PyPDF2
+from groq import Groq
 import re
 from dotenv import load_dotenv
 load_dotenv()
 import os
-import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
-import time
-from flask_session import Session
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from sqlalchemy.sql import text
-import pandas as pd
-from io import BytesIO
-from werkzeug.utils import secure_filename
-# ================== CẤU HÌNH & KHỞI TẠO ==================
-api_key = os.getenv("GEMINI_API_KEY")
-if not api_key:
-    raise ValueError("❌ Không tìm thấy GEMINI_API_KEY trong biến môi trường!")
+import json
+import csv
 
-genai.configure(api_key=api_key)
+from io import StringIO
 
-GENERATION_MODEL = os.getenv('GENERATION_MODEL', 'gemma-3-4b-it')
-EMBEDDING_MODEL = os.getenv('EMBEDDING_MODEL', 'text-embedding-004')
+# JSON Database module
+import json_db
+
+# ================== CAU HINH & KHOI TAO ==================
+groq_client = Groq(api_key=os.getenv("GROQ_API_KEY", ""))
+
+# Model routing - phan bo mo hinh theo task
+CHAT_MODEL = os.getenv('CHAT_MODEL', 'qwen/qwen3-32b')          # Chat tutoring - chat luong tot
+EVAL_MODEL = os.getenv('EVAL_MODEL', 'llama-3.1-8b-instant')    # Danh gia - nhanh, nhe
+FALLBACK_MODEL = os.getenv('FALLBACK_MODEL', 'llama-3.3-70b-versatile')
+
+print(f"[CONFIG] Chat: {CHAT_MODEL} | Eval: {EVAL_MODEL} | Fallback: {FALLBACK_MODEL}")
 
 app = Flask(__name__)
-app.secret_key = os.getenv("FLASK_SECRET_KEY")
-app.config["SESSION_TYPE"] = "filesystem"
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-Session(app)
-# Cấu hình upload folder cho PDF
-UPLOAD_FOLDER = './static'
-ALLOWED_EXTENSIONS = {'pdf'}
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # Giới hạn 16MB
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-secret-key-change-me")
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+# Flask's built-in cookie sessions are used (no server-side session needed)
 
-class NguoiDung(db.Model):
-    __tablename__ = 'taikhoanhocsinh'
-    id = db.Column(db.Integer, primary_key=True)
-    tendangnhap = db.Column(db.String(80), unique=True, nullable=False)
-    matkhau = db.Column(db.String(255), nullable=False)
-    tenhocsinh = db.Column(db.Text, default='')
-    
-    # Legacy columns (kept for backward compatibility)
-    nangluc = db.Column(db.String(20), default='TB')
-    lichsu = db.Column(db.Text, default='')
-    lydo = db.Column(db.Text, default='')
-    
-    # Subject-specific chat lichsu
-    lichsutoan = db.Column(db.Text, default='')
-    lichsuly = db.Column(db.Text, default='')
-    lichsuhoa = db.Column(db.Text, default='')
-    lichsusinh = db.Column(db.Text, default='')
-    
-    # Subject-specific proficiency levels
-    nangluctoan = db.Column(db.String(20), default='TB')
-    nanglucly = db.Column(db.String(20), default='TB')
-    nangluchoa = db.Column(db.String(20), default='TB')
-    nanglucsinh = db.Column(db.String(20), default='TB')
-    
-    # Subject-specific assessment reasons
-    lydotoan = db.Column(db.Text, default='')
-    lydoly = db.Column(db.Text, default='')
-    lydohoa = db.Column(db.Text, default='')
-    lydosinh = db.Column(db.Text, default='')
-    
-    # Question counters for tracking when to assess
-    socautoan = db.Column(db.Integer, default=0)
-    socauly = db.Column(db.Integer, default=0)
-    socauhoa = db.Column(db.Integer, default=0)
-    socausinh = db.Column(db.Integer, default=0)
+# ================== LEVEL-BASED PEDAGOGY ==================
+def get_level_instruction(level):
+    """Trả về hướng dẫn sư phạm tùy chỉnh theo trình độ học sinh"""
+    instructions = {
+        'Gioi': """
+    [TRÌNH ĐỘ: GIỎI — Học sinh giỏi, tư duy tốt]
+    - Giao tiếp như hai người cùng nghiên cứu: "Con đã nắm tốt rồi, hãy cùng đi sâu hơn nhé!"
+    - Đặt câu hỏi ngược để thách thức tư duy: "Vậy nếu thay đổi điều kiện này thì sao?"
+    - Giới thiệu kiến thức mở rộng, liên môn, ứng dụng thực tế nâng cao
+    - Sử dụng thuật ngữ song ngữ tự nhiên, không cần dịch từng từ
+    - Gợi ý bài tập tự luận, Olympic, hoặc vấn đề mở để học sinh tự khám phá
+    - Độ khó từ vựng tiếng Anh: tương đương IELTS 5.0–6.0""",
+        'Kha': """
+    [TRÌNH ĐỘ: KHÁ — Học sinh khá, cần phát triển thêm]
+    - Giảng dạy có cấu trúc: giải thích khái niệm → ví dụ minh họa → bài vận dụng
+    - Khích lệ: "Con làm tốt lắm! Hãy thử thêm bài này nhé"
+    - Đưa ra 1–2 câu hỏi mở rộng sau mỗi giải thích
+    - Song ngữ: Giải thích bằng tiếng Việt trước, thêm thuật ngữ tiếng Anh kèm theo
+    - Độ khó từ vựng tiếng Anh: tương đương IELTS 4.0–5.0""",
+        'TB': """
+    [TRÌNH ĐỘ: TRUNG BÌNH — Cần hướng dẫn từng bước]
+    - Chia nhỏ vấn đề thành các bước nhỏ, dễ hiểu
+    - Sử dụng ví dụ đơn giản, gần gũi đời sống hàng ngày
+    - Dẫn dắt từ từ: "Bước 1: ...", "Bước 2: ..."
+    - Nhắc lại kiến thức nền tảng trước khi giải bài mới
+    - Song ngữ: Tiếng Việt là chính, chỉ thêm từ khóa tiếng Anh quan trọng
+    - Độ khó từ vựng tiếng Anh: cơ bản, đơn giản""",
+        'Yeu': """
+    [TRÌNH ĐỘ: YẾU — Cần hỗ trợ đặc biệt]
+    - Giảng giải cực kỳ đơn giản, như nói chuyện với trẻ nhỏ
+    - Mỗi bước chỉ nêu 1 ý, kèm ví dụ cụ thể ngay
+    - Sử dụng so sánh đời thường (VD: phản ứng hóa học giống như nấu ăn)
+    - Không dùng thuật ngữ phức tạp, giải thích bằng ngôn ngữ bình dân
+    - Động viên thường xuyên: "Đừng lo, thầy sẽ giúp con hiểu từng bước một!"
+    - Song ngữ: Chỉ dùng tiếng Việt, thêm 1–2 từ tiếng Anh cơ bản nhất
+    - Luôn kiểm tra lại: Con hiểu chưa? Thầy giải thích lại nhé!"""
+    }
+    return instructions.get(level, instructions['TB'])
 
-with app.app_context():
-    # Đảm bảo schema public tồn tại
-    db.session.execute(text('CREATE SCHEMA IF NOT EXISTS public;'))
-    db.create_all()
-    print("✅ Đã kiểm tra/tạo bảng taikhoanhocsinh trong schema public")
+# ================== DANH GIA NANG LUC ==================
+def evaluate_student_level(history, subject='general'):
+    recent_exchanges = "\n".join(history[-10:])
+    recent_questions = "\n".join([msg for msg in history[-10:] if msg.startswith("\U0001f467")])
 
-# Biến toàn cục cho RAG
-RAG_DATA = {
-    "chunks": [],
-    "embeddings": np.array([]),
-    "is_ready": False
-}
+    subject_names = {
+        'math': 'Toán học', 'physics': 'Vật lý',
+        'chemistry': 'Hóa học', 'biology': 'Sinh học',
+        'general': 'Khoa học Tự nhiên'
+    }
+    subject_name = subject_names.get(subject, 'Khoa học Tự nhiên')
 
-# ================== ĐỌC & CHIA CHUNKS ==================
-def extract_pdf_text(pdf_path):
-    text = ""
-    try:
-        with open(pdf_path, 'rb') as f:
-            reader = PyPDF2.PdfReader(f)
-            for page in reader.pages:
-                text += page.extract_text() or ""
-    except Exception as e:
-        print(f"⚠️ Lỗi khi đọc PDF {pdf_path}: {e}")
-    return text
+    prompt = f"""Bạn là chuyên gia đánh giá năng lực học sinh THCS môn {subject_name}.
 
-def create_chunks_from_directory(directory='./static', chunk_size=400):
-    all_chunks = []
-    if not os.path.exists(directory):
-        print(f"Thư mục {directory} không tồn tại.")
-        return []
-    pdf_files = [f for f in os.listdir(directory) if f.endswith('.pdf')]
-    print(f"🔍 Tìm thấy {len(pdf_files)} tệp PDF trong {directory}...")
-    for filename in pdf_files:
-        pdf_path = os.path.join(directory, filename)
-        content = extract_pdf_text(pdf_path)
-        for i in range(0, len(content), chunk_size):
-            chunk = content[i:i + chunk_size].strip()
-            if chunk:
-                all_chunks.append(f"[Nguồn: {filename}] {chunk}")
-    print(f"✅ Đã tạo tổng cộng {len(all_chunks)} đoạn văn (chunks).")
-    return all_chunks
+=== DỮ LIỆU PHÂN TÍCH ===
+Lịch sử hỏi đáp gần nhất (bao gồm câu hỏi của học sinh và phản hồi của giáo viên):
+{recent_exchanges}
 
-def embed_with_retry(texts, model_name, max_retries=5):
-    all_embeddings = []
-    for text in texts:
-        for attempt in range(max_retries):
-            try:
-                result = genai.embed_content(model=model_name, content=text)
-                all_embeddings.append(result["embedding"])
-                break
-            except Exception as e:
-                if attempt < max_retries - 1:
-                    print(f"⚠️ Thử lại lần {attempt+1}: {e}")
-                    time.sleep(2 ** attempt)
-                else:
-                    print(f"💥 Thất bại sau {max_retries} lần: {e}")
-                    raise
-    return np.array(all_embeddings)
+Các câu hỏi riêng của học sinh:
+{recent_questions}
 
-def initialize_rag_data():
-    global RAG_DATA
-    print("⏳ Đang khởi tạo dữ liệu RAG...")
-    chunks = create_chunks_from_directory()
-    if not chunks:
-        print("Không có dữ liệu để nhúng.")
-        return
-    try:
-        embeddings = embed_with_retry(chunks, EMBEDDING_MODEL)
-        RAG_DATA.update({
-            "chunks": chunks,
-            "embeddings": embeddings,
-            "is_ready": True
-        })
-        print("🎉 Khởi tạo RAG hoàn tất!")
-    except Exception as e:
-        print(f"❌ KHÔNG THỂ KHỞI TẠO RAG: {e}")
-        RAG_DATA["is_ready"] = False
+=== ĐÁNH GIÁ THEO 5 TIÊU CHÍ ===
 
-initialize_rag_data()
+1. **Độ sâu kiến thức**: Học sinh hỏi ở mức nào? (nhận biết / thông hiểu / vận dụng / vận dụng cao). Có tự giải thích được khái niệm không?
 
-# ================== TRUY XUẤT NGỮ CẢNH ==================
-def retrieve_context(query, top_k=3):
-    if not RAG_DATA["is_ready"]:
-        return "Không có tài liệu RAG nào được tải."
-    try:
-        query_vec = embed_with_retry([query], EMBEDDING_MODEL)[0].reshape(1, -1)
-        sims = cosine_similarity(query_vec, RAG_DATA["embeddings"])[0]
-        top_idxs = np.argsort(sims)[-top_k:][::-1]
-        return "\n\n---\n\n".join([RAG_DATA["chunks"][i] for i in top_idxs])
-    except Exception as e:
-        print(f"❌ Lỗi RAG: {e}")
-        return "Lỗi khi tìm kiếm ngữ cảnh."
+2. **Tư duy logic**: Cách đặt câu hỏi có logic không? Có biết chia nhỏ vấn đề, suy luận từ tiên đề đến kết luận không?
 
-# ================== ĐÁNH GIÁ NĂNG LỰC ==================
-def evaluate_student_level(history):
-    recent_questions = "\n".join([msg for msg in history[-5:] if msg.startswith("👧 Học sinh:")])
-    prompt = f"""
-    Bạn là một **Giáo viên Khoa học Tự nhiên Song ngữ (Anh – Việt)**, có nhiệm vụ **đánh giá năng lực học tập và khả năng tự học của học sinh** dựa trên lịch sử câu hỏi gần đây.
+3. **Năng lực song ngữ**: Sử dụng thuật ngữ khoa học tiếng Anh đúng/sai? Có tự tin hỏi bằng tiếng Anh không?
 
-    Dưới đây là **5 câu hỏi gần nhất của học sinh**:
-    {recent_questions}
+4. **Tự học và tư duy phản biện**: Học sinh có chủ động tìm hiểu sâu hơn, đặt câu hỏi mở rộng, hay chỉ xin đáp án?
 
-    ### 🎯 Yêu cầu:
-    1. Đọc kỹ nội dung các câu hỏi, xác định:
-    - Mức độ hiểu biết của học sinh về các môn **Toán, Lý, Hóa, Sinh**.
-    - Khả năng **diễn đạt logic**, **sử dụng thuật ngữ khoa học**, **tự tìm hiểu**.
-    - Mức độ sử dụng **song ngữ Anh – Việt**: đúng, sai, hoặc thiếu tự nhiên.
-    2. Phân loại năng lực học tập tổng quát thành **một trong 4 cấp độ**:
-    - **Giỏi (Gioi)** → hỏi các vấn đề nâng cao, diễn đạt logic, dùng tiếng Anh đúng ngữ cảnh học thuật, thể hiện tư duy phản biện.
-    - **Khá (Kha)** → hỏi ở mức khá, hiểu khái niệm cơ bản, có thể sai nhẹ nhưng diễn đạt tốt.
-    - **Trung bình (TB)** → hỏi những kiến thức cơ bản, còn sai sót khi dùng thuật ngữ hoặc câu hỏi chưa rõ.
-    - **Yếu (Yeu)** → hỏi lặp lại, diễn đạt kém, không nắm chắc khái niệm, chưa tự giải thích được vấn đề.
-    3. Nếu học sinh xen kẽ nhiều môn khác nhau (VD: Toán và Sinh), hãy **đánh giá trung bình tổng hợp**, không thiên lệch một môn.
-    4. Viết kết quả ngắn gọn, có lý do súc tích.
+5. **Điểm yếu và lỗi thường gặp**: Sai sót lặp lại (tính toán, khái niệm, đơn vị)? Lỗ hổng kiến thức nền tảng? Có cải thiện qua các lần hỏi không?
 
-    ### 📋 Định dạng đầu ra:
-    Cấp độ: [Gioi / Kha / TB / Yeu]  
-    Lý do: [Giải thích lý do rõ ràng, phân tích định hướng cho giáo viên hỗ trợ, tối đa 150–200 từ.]
-    """
+=== PHÂN LOẠI ===
+- Gioi: Vận dụng cao, tư duy phản biện, song ngữ tốt, chủ động khám phá
+- Kha: Thông hiểu tốt, có tư duy nhưng chưa sâu, song ngữ khá
+- TB: Nhận biết kiến thức cơ bản, cần hướng dẫn từng bước, song ngữ hạn chế
+- Yeu: Chưa nắm kiến thức nền tảng, hỏi lặp lại, khó diễn đạt
+
+=== ĐỊNH DẠNG ĐẦU RA (BẮT BUỘC TUÂN THỦ) ===
+Cap do: [Gioi/Kha/TB/Yeu]
+Ly do: [200–300 từ. Phân tích cụ thể theo 5 tiêu chí trên. Nêu rõ điểm mạnh, điểm yếu, và 2–3 đề xuất cụ thể để giáo viên hỗ trợ học sinh tiến bộ.]
+"""
 
     try:
-        model = genai.GenerativeModel(GENERATION_MODEL)
-        response = model.generate_content(prompt)
-        response_text = response.text.strip()
-        # Extract level and reason from response
-        level_match = re.search(r'Cấp độ: (Gioi|Kha|TB|Yeu)', response_text)
-        lydo_match = re.search(r'Lý do: (.+)', response_text, re.DOTALL)
-        
+        response = groq_client.chat.completions.create(
+            model=EVAL_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3,
+            max_tokens=800
+        )
+        response_text = response.choices[0].message.content.strip()
+
+        level_match = re.search(r'Cap do:\s*(Gioi|Kha|TB|Yeu)', response_text)
+        if not level_match:
+            level_match = re.search(r'\b(Gioi|Kha|TB|Yeu)\b', response_text)
+
+        lydo_match = re.search(r'Ly do:\s*(.+)', response_text, re.DOTALL)
+
         level = level_match.group(1) if level_match else "TB"
-        lydo = lydo_match.group(1).strip() if lydo_match else "Không có lý do cụ thể."
-        
+        lydo = lydo_match.group(1).strip() if lydo_match else response_text[:500]
+
         if level not in ['Gioi', 'Kha', 'TB', 'Yeu']:
             level = 'TB'
         return level, lydo
     except Exception as e:
-        print(f"❌ Lỗi đánh giá: {e}")
-        return 'TB', 'Đánh giá không thành công do lỗi hệ thống.'
+        print(f"[ERROR] Evaluation failed: {e}")
+        return 'TB', 'Danh gia khong thanh cong do loi he thong.'
 
 
 # ================== ĐỊNH DẠNG TRẢ LỜI ==================
@@ -381,16 +300,16 @@ def inject_user():
     """Inject current user info into all templates."""
     user_info = None
     if 'user_id' in session:
-        user = db.session.get(NguoiDung, session['user_id'])
+        user = json_db.get_user_by_id(session['user_id'])
         if user:
             user_info = {
-                'id': user.id,
-                'tendangnhap': user.tendangnhap,
-                'tenhocsinh': user.tenhocsinh or user.tendangnhap,
-                'nangluctoan': user.nangluctoan or 'TB',
-                'nanglucly': user.nanglucly or 'TB',
-                'nangluchoa': user.nangluchoa or 'TB',
-                'nanglucsinh': user.nanglucsinh or 'TB',
+                'id': user['id'],
+                'tendangnhap': user['tendangnhap'],
+                'tenhocsinh': user.get('tenhocsinh') or user['tendangnhap'],
+                'nangluctoan': user.get('nangluctoan', 'TB'),
+                'nanglucly': user.get('nanglucly', 'TB'),
+                'nangluchoa': user.get('nangluchoa', 'TB'),
+                'nanglucsinh': user.get('nanglucsinh', 'TB'),
             }
     return dict(current_user=user_info)
 
@@ -400,7 +319,7 @@ def register():
     if request.method == 'POST':
         tendangnhap = request.form.get('tendangnhap')
         matkhau = request.form.get('matkhau')
-        tenhocsinh = request.form.get('tenhocsinh', '').strip()  # LẤY TÊN HỌC SINH
+        tenhocsinh = request.form.get('tenhocsinh', '').strip()
         if not tendangnhap or not matkhau:
             flash('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.', 'error')
             return redirect(url_for('register'))
@@ -408,47 +327,16 @@ def register():
             flash('Vui lòng nhập tên học sinh.', 'error')
             return redirect(url_for('register'))
 
-        if NguoiDung.query.filter_by(tendangnhap=tendangnhap).first():
+        if json_db.get_user_by_username(tendangnhap):
             flash('Tên đăng nhập đã tồn tại.', 'error')
             return redirect(url_for('register'))
 
         try:
             hashed_password = generate_password_hash(matkhau, method='pbkdf2:sha256')
-            user = NguoiDung(
-                tendangnhap=tendangnhap, 
-                matkhau=hashed_password, 
-                tenhocsinh=tenhocsinh,
-                # Legacy columns
-                nangluc='TB',
-                lichsu='',
-                lydo='',
-                # Subject-specific lichsu
-                lichsutoan='',
-                lichsuly='',
-                lichsuhoa='',
-                lichsusinh='',
-                # Subject-specific levels
-                nangluctoan='TB',
-                nanglucly='TB',
-                nangluchoa='TB',
-                nanglucsinh='TB',
-                # Subject-specific reasons
-                lydotoan='',
-                lydoly='',
-                lydohoa='',
-                lydosinh='',
-                # Question counters
-                socautoan=0,
-                socauly=0,
-                socauhoa=0,
-                socausinh=0
-            )
-            db.session.add(user)
-            db.session.commit()
+            json_db.create_user(tendangnhap, hashed_password, tenhocsinh)
             flash('Đăng ký thành công! Vui lòng đăng nhập.', 'success')
             return redirect(url_for('login'))
         except Exception as e:
-            db.session.rollback()
             print(f"Error during registration: {str(e)}")
             flash(f'Lỗi khi đăng ký: {str(e)}', 'error')
             return redirect(url_for('register'))
@@ -462,9 +350,9 @@ def login():
         if not tendangnhap or not matkhau:
             flash('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.', 'error')
             return redirect(url_for('login'))
-        user = NguoiDung.query.filter_by(tendangnhap=tendangnhap).first()
-        if user and check_password_hash(user.matkhau, matkhau):
-            session['user_id'] = user.id
+        user = json_db.get_user_by_username(tendangnhap)
+        if user and check_password_hash(user['matkhau'], matkhau):
+            session['user_id'] = user['id']
             flash('Đăng nhập thành công!', 'success')
             return redirect(url_for('index'))
         flash('Tên đăng nhập hoặc mật khẩu không đúng.', 'error')
@@ -566,8 +454,8 @@ def chat():
     if not user_message:
         return jsonify({'response': format_response('Con hãy nhập câu hỏi nhé!')})
 
-    # Get user from database
-    user = db.session.get(NguoiDung, session['user_id'])
+    # Get user from JSON database
+    user = json_db.get_user_by_id(session['user_id'])
     if not user:
         return jsonify({'error': 'Người dùng không tồn tại'}), 401
 
@@ -606,74 +494,67 @@ def chat():
     subject_data = subject_mapping[subject]
     
     # Get current history for this subject
-    current_history_str = getattr(user, subject_data['history_col']) or ''
+    current_history_str = user.get(subject_data['history_col'], '') or ''
     current_history = current_history_str.split('\n') if current_history_str else []
     
     # Add new question to history
-    current_history.append(f"👧 Học sinh: {user_message}")
+    current_history.append(f"Học sinh: {user_message}")
     
-    # 🔍 Retrieve RAG context
-    related_context = retrieve_context(user_message)
-    recent_history = "\n".join(current_history[-5:])
+    recent_history = "\n".join(current_history[-6:])
 
-    # Get subject-specific level
-    student_level = getattr(user, subject_data['level_col'])
+    # Get subject-specific level and adaptive instruction
+    student_level = user.get(subject_data['level_col'], 'TB')
+    level_instruction = get_level_instruction(student_level)
 
-    # Subject-specific information with Enhanced Personas
+    # Thông tin môn học và hướng dẫn chuyên môn
     subject_info = {
         'math': {
             'name': 'Toán học',
             'name_en': 'Mathematics',
             'focus': 'Đại số, Hình học, Số học, Phương trình, Hàm số, và các phép tính toán học',
             'persona_instruction': """
-            - **Tư duy Logic:** Hãy giải thích mọi bước biến đổi phương trình/biểu thức thật rõ ràng (từ dòng này sang dòng kia đã làm gì).
-            - **Cấu trúc:** Sử dụng các gạch đầu dòng để tách biệt các bước giải.
-            - **Visualization:** Nếu là bài hình học, hãy mô tả hình vẽ thật chi tiết để học sinh hình dung được.
-            """
+            - **Tư duy Logic:** Giải thích mọi bước biến đổi phương trình/biểu thức thật rõ ràng.
+            - **Cấu trúc:** Sử dụng gạch đầu dòng để tách biệt các bước giải.
+            - **Hình học:** Nếu là bài hình học, hãy mô tả hình vẽ thật chi tiết để học sinh hình dung."""
         },
         'physics': {
             'name': 'Vật lý',
             'name_en': 'Physics',
             'focus': 'Cơ học, Điện học, Nhiệt học, Quang học, Lực, Năng lượng, và các định luật vật lý',
             'persona_instruction': """
-            - **Hiện tượng thực tế:** Luôn bắt đầu bằng việc liên hệ vấn đề với hiện tượng thực tế xung quanh (ví dụ: tại sao xe dừng lại khi phanh).
+            - **Hiện tượng thực tế:** Luôn liên hệ vấn đề với hiện tượng thực tế xung quanh.
             - **Đơn vị:** Nhấn mạnh việc đổi đơn vị trước khi tính toán.
-            - **Bản chất:** Giải thích bản chất vật lý (tại sao lực tác dụng lại gây ra gia tốc) thay vì chỉ thay số vào công thức.
-            """
+            - **Bản chất:** Giải thích bản chất vật lý thay vì chỉ thay số vào công thức."""
         },
         'chemistry': {
             'name': 'Hóa học',
             'name_en': 'Chemistry',
             'focus': 'Nguyên tử, Phân tử, Phản ứng hóa học, Dung dịch, Axit-Bazơ-Muối, và Hóa học hữu cơ',
             'persona_instruction': """
-            - **Cơ chế:** Mô tả quá trình phản ứng xảy ra ở cấp độ phân tử (nguyên tử nào tách ra, nguyên tử nào kết hợp).
-            - **Phương trình:** Luôn luôn cân bằng phương trình hóa học và ghi rõ trạng thái chất (rắn, lỏng, khí, dung dịch) nếu cần.
-            - **Màu sắc/Hiện tượng:** Mô tả màu sắc dung dịch, khí bay ra, hay kết tủa để học sinh dễ nhớ.
-            """
+            - **Cơ chế:** Mô tả quá trình phản ứng ở cấp độ phân tử.
+            - **Phương trình:** Luôn cân bằng phương trình hóa học và ghi rõ trạng thái chất.
+            - **Hiện tượng:** Mô tả màu sắc dung dịch, khí bay ra, hay kết tủa để học sinh dễ nhớ."""
         },
         'biology': {
             'name': 'Sinh học',
             'name_en': 'Biology',
             'focus': 'Tế bào, Di truyền, Sinh thái, Cơ thể người, Thực vật, Động vật, và Hệ sinh thái',
             'persona_instruction': """
-            - **Hệ thống:** Giải thích sinh học như một hệ thống liên kết (tế bào -> mô -> cơ quan -> hệ cơ quan -> cơ thể).
-            - **So sánh:** Sử dụng phép so sánh đời sống (ví dụ: Ti thể giống như nhà máy điện của tế bào).
-            - **Quá trình:** Mô tả các quá trình sinh học theo trình tự thời gian hoặc nhân-quả rõ ràng.
-            """
+            - **Hệ thống:** Giải thích sinh học như hệ thống liên kết (tế bào → mô → cơ quan → cơ thể).
+            - **So sánh:** Sử dụng so sánh đời sống (VD: Ti thể giống nhà máy điện của tế bào).
+            - **Quá trình:** Mô tả các quá trình sinh học theo trình tự thời gian hoặc nhân-quả rõ ràng."""
         },
         'general': {
             'name': 'Khoa học Tự nhiên',
             'name_en': 'Natural Sciences',
-            'focus': 'Toán, Lý, Hóa, Sinh',
-            'persona_instruction': "- Hãy hướng dẫn học sinh xác định vấn đề thuộc môn học nào trước."
+            'focus': 'Toan, Ly, Hoa, Sinh',
+            'persona_instruction': '- Hãy hướng dẫn học sinh xác định vấn đề thuộc môn học nào trước.'
         }
     }
 
     current_subject = subject_info.get(subject, subject_info['general'])
     
-    prompt = f"""
-    Bạn là **Thầy giáo Song ngữ Việt – Anh**, chuyên dạy môn **{current_subject['name']} ({current_subject['name_en']})**.  
-    Model: **Gemma-3-4B-IT** (Instruction Tuned for Education).
+    prompt = f"""Bạn là **Thầy giáo Song ngữ Việt – Anh**, chuyên dạy môn **{current_subject['name']} ({current_subject['name_en']})**.
     Giọng điệu: Thân thiện, khích lệ, chuyên nghiệp (Professional & Encouraging).
     Xưng hô: **"thầy – con"**.
     
@@ -681,81 +562,152 @@ def chat():
 
     ---
 
-    ### 🧠 **Thông tin ngữ cảnh (Context):**
-    - 📚 **RAG (Tài liệu):** {related_context}
-    - 💬 **Lịch sử trò chuyện:** {recent_history}
-    - 👨‍🎓 **Trình độ học sinh:** {student_level} (Hãy điều chỉnh độ khó từ vựng và khái niệm cho phù hợp).
+    ### 🧠 Thông tin học sinh:
+    - 💬 **Lịch sử trò chuyện gần đây:** {recent_history}
+    - 🎓 **Trình độ học sinh hiện tại:** **{student_level}**
     - ❓ **Câu hỏi hiện tại:** {user_message}
 
     ---
 
-    ### 💎 **Hướng dẫn sư phạm đặc biệt ({current_subject['name']}):**
+    ### 🎯 HƯỚNG DẪN SƯ PHẠM THEO TRÌNH ĐỘ (RẤT QUAN TRỌNG — PHẢI TUÂN THỦ NGHIÊM NGẶT):
+    {level_instruction}
+
+    ### 💎 Hướng dẫn chuyên môn ({current_subject['name']}):
     {current_subject['persona_instruction']}
 
     ---
 
-    ### 🎯 **Cấu trúc câu trả lời bắt buộc:**
+    ### 📋 CẤU TRÚC CÂU TRẢ LỜI BẮT BUỘC:
 
     1.  **Phần Tiếng Việt (Vietnamese Explanation):**
         -   Giải thích chi tiết, dễ hiểu, chia nhỏ vấn đề.
-        -   Sử dụng **Markdown chuẩn**: `**bold**`, `*italic*`, danh sách có dấu đầu dòng `-`, danh sách số `1.`
-        -   Sử dụng LaTeX cho công thức Toán/Lý/Hóa:
-            - Công thức trong dòng: `$x^2 + y^2 = z^2$`
-            - Công thức riêng dòng: `$$\\int_0^1 x^2 dx$$`
+        -   Sử dụng **Markdown chuẩn**: `**bold**`, `*italic*`, danh sách `-`, số `1.`
+        -   Công thức toán/lý/hóa dùng LaTeX:
+            - Inline: `$x^2 + y^2 = z^2$`
+            - Display: `$$\\int_0^1 x^2 dx$$`
         -   **QUAN TRỌNG:** Chỉ dùng Markdown thuần túy, KHÔNG dùng HTML tags.
 
-    2.  **Phần Tiếng Anh (English Translation - Learning Corner):**
-        -   Bắt đầu bằng tiêu đề: `### 👉 English Version`
+    2.  **Phần Tiếng Anh (English Version):**
+        -   Bắt đầu bằng: `### 👉 English Version`
         -   Dịch nội dung chính sang tiếng Anh chuẩn học thuật.
         -   Giữ nguyên công thức LaTeX.
+        -   **ĐỘ KHÓ TIẾNG ANH PHẢI PHÙ HỢP VỚI TRÌNH ĐỘ ({student_level}).**
 
     3.  **Từ vựng quan trọng (Key Vocabulary):**
-        -   Liệt kê 3-5 từ khóa khoa học theo format:
-        -   `**Từ tiếng Việt** - English Term`
+        -   Liệt kê 3–5 từ khóa khoa học: `**Từ tiếng Việt** — English Term`
 
     ---
     
-    ### 📝 **Nguyên tắc định dạng:**
+    ### 📝 Nguyên tắc định dạng:
     - Sử dụng Markdown thuần túy, KHÔNG dùng HTML
     - Công thức toán: dùng `$...$` (inline) hoặc `$$...$$` (display)
     - Xuống dòng: để trống một dòng giữa các đoạn
-    - Nhấn mạnh: `**bold**` hoặc `*italic*`
-    - Code/thuật ngữ: dùng backticks `như thế này`
     """
+    # Detect if running on Vercel (serverless - no SSE support)
+    is_vercel = os.getenv('VERCEL', '') != ''
 
-    try:
-        model = genai.GenerativeModel(GENERATION_MODEL)
-        response = model.generate_content(prompt)
-        ai_text = response.text
+    if is_vercel:
+        # NON-STREAMING mode for Vercel serverless
+        try:
+            response = groq_client.chat.completions.create(
+                model=CHAT_MODEL,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7,
+                max_tokens=4096,
+                stream=False
+            )
+            raw_text = response.choices[0].message.content or ""
+            # Strip <think>...</think> blocks
+            clean_text = re.sub(r'<think>[\s\S]*?</think>', '', raw_text).strip()
 
-        # Add AI response to history
-        current_history.append(f"🧑‍🏫 Thầy/Cô: {ai_text}")
-        
-        # Save updated history to database
-        setattr(user, subject_data['history_col'], '\n'.join(current_history))
-        
-        # Increment question counter for this subject
-        current_count = getattr(user, subject_data['counter_col']) or 0
-        new_count = current_count + 1
-        setattr(user, subject_data['counter_col'], new_count)
-        
-        # Check if we need to assess this subject (every 5 questions)
-        if new_count % 5 == 0:
-            # Assess THIS subject only
-            new_level, lydo = evaluate_student_level(current_history)
-            setattr(user, subject_data['level_col'], new_level)
-            setattr(user, subject_data['lydo_col'], lydo)
-            print(f"✅ User {user.tendangnhap} - {subject.upper()} level updated to {new_level} after {new_count} questions")
-            print(f"   Reason: {lydo[:100]}...")
-        
-        # Commit all changes to database
-        db.session.commit()
+            # Save to history
+            current_history.append(f"Thầy/Cô: {clean_text}")
+            updates = {}
+            updates[subject_data['history_col']] = '\n'.join(current_history)
+            current_count = user.get(subject_data['counter_col'], 0) or 0
+            new_count = current_count + 1
+            updates[subject_data['counter_col']] = new_count
+            if new_count % 5 == 0:
+                new_level, lydo = evaluate_student_level(current_history, subject)
+                updates[subject_data['level_col']] = new_level
+                updates[subject_data['lydo_col']] = lydo
+            json_db.update_user(session['user_id'], updates)
 
-        return jsonify({'response': ai_text})
+            return jsonify({'response': clean_text})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
 
-    except Exception as e:
-        print(f"❌ Lỗi Gemini: {e}")
-        return jsonify({'response': "Thầy Gemini hơi mệt, con thử lại sau nhé!"})
+    # STREAMING mode for local development
+    _user_id = session['user_id']
+    _subject = subject
+    _subject_data = subject_data
+    _current_history = current_history
+    _user = user
+    _prompt = prompt
+
+    def generate_stream():
+        try:
+            stream = groq_client.chat.completions.create(
+                model=CHAT_MODEL,
+                messages=[{"role": "user", "content": _prompt}],
+                temperature=0.7,
+                max_tokens=4096,
+                stream=True
+            )
+            full_raw = ""
+            full_text = ""
+            in_think = False
+
+            for chunk in stream:
+                delta = chunk.choices[0].delta
+                if delta and delta.content:
+                    token = delta.content
+                    full_raw += token
+
+                    if '<think>' in full_raw and not in_think:
+                        in_think = True
+                        continue
+
+                    if in_think:
+                        if '</think>' in full_raw:
+                            in_think = False
+                            after_think = full_raw.split('</think>', 1)[-1]
+                            new_text = after_think[len(full_text):]
+                            if new_text.strip():
+                                full_text = after_think
+                                chunk_data = json.dumps({'chunk': new_text}, ensure_ascii=False)
+                                yield f"data: {chunk_data}\n\n"
+                        continue
+
+                    full_text += token
+                    chunk_data = json.dumps({'chunk': token}, ensure_ascii=False)
+                    yield f"data: {chunk_data}\n\n"
+
+            clean_text = re.sub(r'<think>[\s\S]*?</think>', '', full_raw).strip()
+
+            done_data = json.dumps({'done': True, 'full_text': clean_text}, ensure_ascii=False)
+            yield f"data: {done_data}\n\n"
+
+            _current_history.append(f"Thầy/Cô: {clean_text}")
+            updates = {}
+            updates[_subject_data['history_col']] = '\n'.join(_current_history)
+            current_count = _user.get(_subject_data['counter_col'], 0) or 0
+            new_count = current_count + 1
+            updates[_subject_data['counter_col']] = new_count
+
+            if new_count % 5 == 0:
+                new_level, lydo = evaluate_student_level(_current_history, _subject)
+                updates[_subject_data['level_col']] = new_level
+                updates[_subject_data['lydo_col']] = lydo
+
+            json_db.update_user(_user_id, updates)
+
+        except Exception as e:
+            error_data = json.dumps({'error': str(e)}, ensure_ascii=False)
+            yield f"data: {error_data}\n\n"
+
+    return Response(generate_stream(), mimetype='text/event-stream',
+                    headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'})
 # QUẢN LÝ HỌC SINH
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
@@ -764,8 +716,8 @@ def admin():
             tendangnhap = request.form.get('tendangnhap')
             matkhau = request.form.get('matkhau')
             if tendangnhap == 'lequangphuc':
-                user = NguoiDung.query.filter_by(tendangnhap=tendangnhap).first()
-                if user and check_password_hash(user.matkhau, matkhau):
+                user = json_db.get_user_by_username(tendangnhap)
+                if user and check_password_hash(user['matkhau'], matkhau):
                     session['admin_session'] = True
                     flash('Đăng nhập admin thành công!', 'success')
                     return redirect(url_for('admin'))
@@ -776,34 +728,30 @@ def admin():
         return render_template('admin_login.html')
     
     # Lấy dữ liệu năng lực học sinh theo từng môn
-    danhsachhocsinh = NguoiDung.query.all()
+    danhsachhocsinh = json_db.get_all_users()
     user_data = []
     for user in danhsachhocsinh:
         # Skip admin users
-        if user.tendangnhap == 'lequangphuc':
+        if user['tendangnhap'] == 'lequangphuc':
             continue
         user_data.append({
-            'id': user.id,
-            'tendangnhap': user.tendangnhap,
-            'tenhocsinh': user.tenhocsinh or "Chưa đặt tên",
-            # Subject-specific levels
-            'nangluctoan': user.nangluctoan or 'TB',
-            'nanglucly': user.nanglucly or 'TB',
-            'nangluchoa': user.nangluchoa or 'TB',
-            'nanglucsinh': user.nanglucsinh or 'TB',
-            # Question counts
-            'socautoan': user.socautoan or 0,
-            'socauly': user.socauly or 0,
-            'socauhoa': user.socauhoa or 0,
-            'socausinh': user.socausinh or 0,
-            # Total questions
-            'tongsocau': (user.socautoan or 0) + (user.socauly or 0) + 
-                              (user.socauhoa or 0) + (user.socausinh or 0),
-            # Reasons (for detail view)
-            'lydotoan': user.lydotoan or '',
-            'lydoly': user.lydoly or '',
-            'lydohoa': user.lydohoa or '',
-            'lydosinh': user.lydosinh or ''
+            'id': user['id'],
+            'tendangnhap': user['tendangnhap'],
+            'tenhocsinh': user.get('tenhocsinh') or "Chưa đặt tên",
+            'nangluctoan': user.get('nangluctoan', 'TB'),
+            'nanglucly': user.get('nanglucly', 'TB'),
+            'nangluchoa': user.get('nangluchoa', 'TB'),
+            'nanglucsinh': user.get('nanglucsinh', 'TB'),
+            'socautoan': user.get('socautoan', 0),
+            'socauly': user.get('socauly', 0),
+            'socauhoa': user.get('socauhoa', 0),
+            'socausinh': user.get('socausinh', 0),
+            'tongsocau': (user.get('socautoan', 0) or 0) + (user.get('socauly', 0) or 0) + 
+                              (user.get('socauhoa', 0) or 0) + (user.get('socausinh', 0) or 0),
+            'lydotoan': user.get('lydotoan', ''),
+            'lydoly': user.get('lydoly', ''),
+            'lydohoa': user.get('lydohoa', ''),
+            'lydosinh': user.get('lydosinh', '')
         })
     
     # Statistics
@@ -917,26 +865,26 @@ def admin_student_detail(student_id):
     if 'admin_session' not in session or not session.get('admin_session'):
         return jsonify({'error': 'Unauthorized'}), 401
     
-    user = db.session.get(NguoiDung, student_id)
+    user = json_db.get_user_by_id(student_id)
     if not user:
         return jsonify({'error': 'Student not found'}), 404
     
     return jsonify({
-        'id': user.id,
-        'tendangnhap': user.tendangnhap,
-        'tenhocsinh': user.tenhocsinh or 'Chưa đặt tên',
-        'nangluctoan': user.nangluctoan or 'TB',
-        'nanglucly': user.nanglucly or 'TB',
-        'nangluchoa': user.nangluchoa or 'TB',
-        'nanglucsinh': user.nanglucsinh or 'TB',
-        'socautoan': user.socautoan or 0,
-        'socauly': user.socauly or 0,
-        'socauhoa': user.socauhoa or 0,
-        'socausinh': user.socausinh or 0,
-        'lydotoan': user.lydotoan or 'Chưa có đánh giá',
-        'lydoly': user.lydoly or 'Chưa có đánh giá',
-        'lydohoa': user.lydohoa or 'Chưa có đánh giá',
-        'lydosinh': user.lydosinh or 'Chưa có đánh giá'
+        'id': user['id'],
+        'tendangnhap': user['tendangnhap'],
+        'tenhocsinh': user.get('tenhocsinh') or 'Chưa đặt tên',
+        'nangluctoan': user.get('nangluctoan', 'TB'),
+        'nanglucly': user.get('nanglucly', 'TB'),
+        'nangluchoa': user.get('nangluchoa', 'TB'),
+        'nanglucsinh': user.get('nanglucsinh', 'TB'),
+        'socautoan': user.get('socautoan', 0),
+        'socauly': user.get('socauly', 0),
+        'socauhoa': user.get('socauhoa', 0),
+        'socausinh': user.get('socausinh', 0),
+        'lydotoan': user.get('lydotoan') or 'Chưa có đánh giá',
+        'lydoly': user.get('lydoly') or 'Chưa có đánh giá',
+        'lydohoa': user.get('lydohoa') or 'Chưa có đánh giá',
+        'lydosinh': user.get('lydosinh') or 'Chưa có đánh giá'
     })
 
 # API: Xóa học sinh
@@ -945,19 +893,17 @@ def admin_delete_student(student_id):
     if 'admin_session' not in session or not session.get('admin_session'):
         return jsonify({'error': 'Unauthorized'}), 401
     
-    user = db.session.get(NguoiDung, student_id)
+    user = json_db.get_user_by_id(student_id)
     if not user:
         return jsonify({'error': 'Student not found'}), 404
     
-    if user.tendangnhap == 'lequangphuc':
+    if user['tendangnhap'] == 'lequangphuc':
         return jsonify({'error': 'Cannot delete admin account'}), 403
     
     try:
-        db.session.delete(user)
-        db.session.commit()
-        return jsonify({'success': True, 'message': f'Đã xóa học sinh {user.tenhocsinh}'})
+        json_db.delete_user(student_id)
+        return jsonify({'success': True, 'message': f"Đã xóa học sinh {user.get('tenhocsinh', '')}"})
     except Exception as e:
-        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 # API: Reset dữ liệu học sinh
@@ -966,36 +912,14 @@ def admin_reset_student(student_id):
     if 'admin_session' not in session or not session.get('admin_session'):
         return jsonify({'error': 'Unauthorized'}), 401
     
-    user = db.session.get(NguoiDung, student_id)
+    user = json_db.get_user_by_id(student_id)
     if not user:
         return jsonify({'error': 'Student not found'}), 404
     
     try:
-        # Reset subject-specific data
-        user.lichsutoan = ''
-        user.lichsuly = ''
-        user.lichsuhoa = ''
-        user.lichsusinh = ''
-        user.nangluctoan = 'TB'
-        user.nanglucly = 'TB'
-        user.nangluchoa = 'TB'
-        user.nanglucsinh = 'TB'
-        user.lydotoan = ''
-        user.lydoly = ''
-        user.lydohoa = ''
-        user.lydosinh = ''
-        user.socautoan = 0
-        user.socauly = 0
-        user.socauhoa = 0
-        user.socausinh = 0
-        # Reset legacy columns
-        user.nangluc = 'TB'
-        user.lichsu = ''
-        user.lydo = ''
-        db.session.commit()
-        return jsonify({'success': True, 'message': f'Đã reset dữ liệu học sinh {user.tenhocsinh}'})
+        json_db.reset_user_data(student_id)
+        return jsonify({'success': True, 'message': f"Đã reset dữ liệu học sinh {user.get('tenhocsinh', '')}"})
     except Exception as e:
-        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 # Upload PDF
@@ -1049,37 +973,46 @@ def export_csv():
         flash('Bạn không có quyền truy cập.', 'error')
         return redirect(url_for('admin'))
     
-    danhsachhocsinh = NguoiDung.query.all()
-    user_data = []
+    danhsachhocsinh = json_db.get_all_users()
+    
+    output = StringIO()
+    fieldnames = ['ID', 'Tên đăng nhập', 'Tên học sinh', 'Năng lực Toán', 'Số câu Toán', 'Lý do Toán',
+                  'Năng lực Lý', 'Số câu Lý', 'Lý do Lý', 'Năng lực Hóa', 'Số câu Hóa', 'Lý do Hóa',
+                  'Năng lực Sinh', 'Số câu Sinh', 'Lý do Sinh', 'Tổng số câu']
+    writer = csv.DictWriter(output, fieldnames=fieldnames)
+    writer.writeheader()
+    
     for user in danhsachhocsinh:
-        if user.tendangnhap == 'lequangphuc':
+        if user['tendangnhap'] == 'lequangphuc':
             continue
-        user_data.append({
-            'ID': user.id,
-            'Tên đăng nhập': user.tendangnhap,
-            'Tên học sinh': user.tenhocsinh or 'Chưa đặt tên',
-            'Năng lực Toán': user.nangluctoan or 'TB',
-            'Số câu Toán': user.socautoan or 0,
-            'Lý do Toán': user.lydotoan or '',
-            'Năng lực Lý': user.nanglucly or 'TB',
-            'Số câu Lý': user.socauly or 0,
-            'Lý do Lý': user.lydoly or '',
-            'Năng lực Hóa': user.nangluchoa or 'TB',
-            'Số câu Hóa': user.socauhoa or 0,
-            'Lý do Hóa': user.lydohoa or '',
-            'Năng lực Sinh': user.nanglucsinh or 'TB',
-            'Số câu Sinh': user.socausinh or 0,
-            'Lý do Sinh': user.lydosinh or '',
-            'Tổng số câu': (user.socautoan or 0) + (user.socauly or 0) + (user.socauhoa or 0) + (user.socausinh or 0)
+        writer.writerow({
+            'ID': user['id'],
+            'Tên đăng nhập': user['tendangnhap'],
+            'Tên học sinh': user.get('tenhocsinh') or 'Chưa đặt tên',
+            'Năng lực Toán': user.get('nangluctoan', 'TB'),
+            'Số câu Toán': user.get('socautoan', 0),
+            'Lý do Toán': user.get('lydotoan', ''),
+            'Năng lực Lý': user.get('nanglucly', 'TB'),
+            'Số câu Lý': user.get('socauly', 0),
+            'Lý do Lý': user.get('lydoly', ''),
+            'Năng lực Hóa': user.get('nangluchoa', 'TB'),
+            'Số câu Hóa': user.get('socauhoa', 0),
+            'Lý do Hóa': user.get('lydohoa', ''),
+            'Năng lực Sinh': user.get('nanglucsinh', 'TB'),
+            'Số câu Sinh': user.get('socausinh', 0),
+            'Lý do Sinh': user.get('lydosinh', ''),
+            'Tổng số câu': (user.get('socautoan', 0) or 0) + (user.get('socauly', 0) or 0) + 
+                           (user.get('socauhoa', 0) or 0) + (user.get('socausinh', 0) or 0)
         })
     
-    df = pd.DataFrame(user_data)
-    output = BytesIO()
-    df.to_csv(output, index=False, encoding='utf-8-sig')
-    output.seek(0)
+    # Convert to bytes with BOM for Excel compatibility
+    bytes_output = BytesIO()
+    bytes_output.write(b'\xef\xbb\xbf')  # UTF-8 BOM
+    bytes_output.write(output.getvalue().encode('utf-8'))
+    bytes_output.seek(0)
     
     return send_file(
-        output,
+        bytes_output,
         mimetype='text/csv',
         as_attachment=True,
         download_name='ket_qua_hoc_tap.csv'
