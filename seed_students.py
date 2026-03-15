@@ -16,10 +16,62 @@ dem_nu = ['Thị', 'Ngọc', 'Thu', 'Phương', 'Hồng', 'Thanh', 'Kiều', 'B�
 ten_nu = ['An', 'Chi', 'Dung', 'Hà', 'Hiền', 'Hoa', 'Hương', 'Linh', 'Ly', 'My', 'Nhi', 'Nhung', 'Oanh', 'Quyên', 'Trang', 'Trinh', 'Uyên', 'Vy']
 lop_list = ['6A', '6B', '7A', '7B', '8A', '8B', '9A', '9B']
 
+# Bỏ dấu tiếng Việt
+_vn_map = str.maketrans(
+    'áàảãạăắằẳẵặâấầẩẫậéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵđ'
+    'ÁÀẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÉÈẺẼẸÊẾỀỂỄỆÍÌỈĨỊÓÒỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÚÙỦŨỤƯỨỪỬỮỰÝỲỶỸỴĐ',
+    'aaaaaaaaaaaaaaaaaeeeeeeeeeeeiiiiiooooooooooooooooouuuuuuuuuuuyyyyyd'
+    'AAAAAAAAAAAAAAAAAEEEEEEEEEEEIIIIIOOOOOOOOOOOOOOOOOUUUUUUUUUUUYYYYYD'
+)
+def no_dau(s):
+    return s.translate(_vn_map).lower().replace(' ', '')
+
+# English-style nicknames
+en_nicknames = ['alex', 'john', 'tommy', 'kevin', 'jack', 'henry', 'peter', 'tony', 'jenny', 'amy', 'lily', 'emma', 'sunny', 'lucky', 'coco']
+
 def gen_name():
+    """Returns (full_name, ho_nodau, dem_nodau, ten_nodau)"""
     if random.choice([True, False]):
-        return f'{random.choice(ho)} {random.choice(dem_nam)} {random.choice(ten_nam)}'
-    return f'{random.choice(ho)} {random.choice(dem_nu)} {random.choice(ten_nu)}'
+        h, d, t = random.choice(ho), random.choice(dem_nam), random.choice(ten_nam)
+    else:
+        h, d, t = random.choice(ho), random.choice(dem_nu), random.choice(ten_nu)
+    return f'{h} {d} {t}', no_dau(h), no_dau(d), no_dau(t)
+
+_used_unames = set()
+def gen_username(ho_nd, dem_nd, ten_nd, lop):
+    """Tạo username kiểu HS thật — đa dạng pattern"""
+    lop_lower = lop.lower()
+    birth_year = random.choice(['2011', '2012', '2013', '2k12', '2k13', '09', '10', '11', '12', '13'])
+    num = random.choice(['', str(random.randint(1,99)), str(random.randint(100,999))])
+    
+    patterns = [
+        # ten + lop: "minhhuy8a", "thuylinh7b"
+        lambda: f"{dem_nd}{ten_nd}{lop_lower}",
+        # ten + so: "longhuy142", "anhvy99"
+        lambda: f"{dem_nd}{ten_nd}{random.randint(10,999)}",
+        # ten + namsinh: "huyduc2k12", "linhchi2013"
+        lambda: f"{ten_nd}{dem_nd}{birth_year}",
+        # ho.ten + lop: "nguyenhuy9a", "tranlinh7a"
+        lambda: f"{ho_nd}{ten_nd}{lop_lower}",
+        # nickname gamertag: "viethoc", "phongpro123"
+        lambda: f"{ten_nd}{random.choice(['hoc','pro','cute','dep','vip','cool','gamer','yolo','sky','star'])}{num}",
+        # English + ten: "johntam142", "alexlinh"
+        lambda: f"{random.choice(en_nicknames)}{ten_nd}{num}",
+        # ten_don + so: "huy2012", "linh09"
+        lambda: f"{ten_nd}{birth_year}",
+        # ho_ten nguyên: "levannam", "phamthivy"
+        lambda: f"{ho_nd}{dem_nd}{ten_nd}",
+    ]
+    
+    for _ in range(50):  # retry if duplicate
+        uname = random.choice(patterns)()
+        if uname not in _used_unames and len(uname) >= 5:
+            _used_unames.add(uname)
+            return uname
+    # fallback
+    fb = f"{ten_nd}{dem_nd}{random.randint(1000,9999)}"
+    _used_unames.add(fb)
+    return fb
 
 levels = ['Gioi', 'Kha', 'TB', 'Yeu']
 weights = [0.15, 0.35, 0.40, 0.10]
@@ -296,11 +348,34 @@ try:
     users = [u for u in users if u['tendangnhap'] in admin_users]
     json_db.save_users(users)
 
-    for i in range(1, 41):
-        name = gen_name()
-        uname = f"hs{i:03d}"
-        pw = generate_password_hash("123456")
+    # 20 HS đầu: BẮT BUỘC đầy đủ 4 môn, không thiếu
+    for i in range(1, 21):
+        name, ho_nd, dem_nd, ten_nd = gen_name()
         lop = random.choice(lop_list)
+        uname = gen_username(ho_nd, dem_nd, ten_nd, lop)
+        pw = generate_password_hash("123456")
+        user = json_db.create_user(uname, pw, f"{name} ({lop})")
+
+        updates = {}
+        for mon, k_nl, k_ld, k_sc in [
+            ('Toán', 'nangluctoan', 'lydotoan', 'socautoan'),
+            ('Lý', 'nanglucly', 'lydoly', 'socauly'),
+            ('Hóa', 'nangluchoa', 'lydohoa', 'socauhoa'),
+            ('Sinh', 'nanglucsinh', 'lydosinh', 'socausinh'),
+        ]:
+            nl = random.choices(levels, weights)[0]
+            updates[k_nl] = nl
+            updates[k_ld] = build_evaluation(mon, nl)
+            updates[k_sc] = random.randint(10, 95)  # tối thiểu 10 câu
+
+        json_db.update_user(user['id'], updates)
+
+    # 20 HS tiếp theo: 85% có đánh giá mỗi môn
+    for i in range(21, 41):
+        name, ho_nd, dem_nd, ten_nd = gen_name()
+        lop = random.choice(lop_list)
+        uname = gen_username(ho_nd, dem_nd, ten_nd, lop)
+        pw = generate_password_hash("123456")
         user = json_db.create_user(uname, pw, f"{name} ({lop})")
 
         updates = {}
@@ -320,10 +395,10 @@ try:
             json_db.update_user(user['id'], updates)
 
     for i in range(41, 51):
-        name = gen_name()
-        uname = f"hs{i:03d}"
-        pw = generate_password_hash("123456")
+        name, ho_nd, dem_nd, ten_nd = gen_name()
         lop = random.choice(lop_list)
+        uname = gen_username(ho_nd, dem_nd, ten_nd, lop)
+        pw = generate_password_hash("123456")
         json_db.create_user(uname, pw, f"{name} ({lop})")
 
     total = len(json_db.get_all_users())
