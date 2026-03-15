@@ -8,7 +8,8 @@ import os
 import json
 import csv
 
-from io import StringIO
+from io import StringIO, BytesIO
+from werkzeug.utils import secure_filename
 
 # JSON Database module
 import json_db
@@ -27,6 +28,15 @@ app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-secret-key-change-me")
 
 # Flask's built-in cookie sessions are used (no server-side session needed)
+
+# Upload config (for admin PDF management)
+UPLOAD_FOLDER = './static'
+ALLOWED_EXTENSIONS = {'pdf'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB limit
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # ================== LEVEL-BASED PEDAGOGY ==================
 def get_level_instruction(level):
@@ -941,8 +951,7 @@ def upload_pdf():
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        flash(f'Upload file {filename} thành công! Đang cập nhật RAG...', 'success')
-        initialize_rag_data()  # Re-init RAG after upload
+        flash(f'Upload file {filename} thành công!', 'success')
     else:
         flash('Chỉ cho phép upload file PDF.', 'error')
     
@@ -958,8 +967,7 @@ def delete_pdf(filename):
     if os.path.exists(file_path):
         try:
             os.remove(file_path)
-            flash(f'Xóa file {filename} thành công! Đã cập nhật RAG.', 'success')
-            initialize_rag_data()  # Re-init RAG sau khi xóa
+            flash(f'Xóa file {filename} thành công!', 'success')
         except Exception as e:
             flash(f'Lỗi khi xóa file {filename}: {str(e)}', 'error')
     else:
