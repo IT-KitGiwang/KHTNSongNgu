@@ -862,12 +862,27 @@
                 loadingMsg.remove();
 
                 if (!res.ok) {
-                    addMessage("Loi ket noi. Vui long thu lai.", false);
+                    const errData = await res.json().catch(() => ({}));
+                    addMessage(errData.error || "Lỗi kết nối. Vui lòng thử lại.", false);
                     sendBtn.disabled = false;
                     return;
                 }
 
-                // Create streaming bubble
+                const contentType = res.headers.get('content-type') || '';
+
+                // === JSON mode (Vercel serverless) ===
+                if (contentType.includes('application/json')) {
+                    const data = await res.json();
+                    if (data.error) {
+                        addMessage("Có lỗi xảy ra: " + data.error, false);
+                    } else if (data.response) {
+                        addMessage(data.response, false);
+                    }
+                    sendBtn.disabled = false;
+                    return;
+                }
+
+                // === SSE Streaming mode (local dev) ===
                 const streamDiv = createStreamBubble();
                 const bubble = streamDiv.querySelector('#streamBubble');
                 bubble.removeAttribute('id');
@@ -902,7 +917,7 @@
                                 scrollToBottom();
                             }
                             if (data.error) {
-                                bubble.innerHTML = '<em>Co loi xay ra. Vui long thu lai.</em>';
+                                bubble.innerHTML = '<em>Có lỗi xảy ra. Vui lòng thử lại.</em>';
                             }
                         } catch (parseErr) { /* skip */ }
                     }
@@ -917,7 +932,7 @@
             } catch (err) {
                 loadingMsg.remove();
                 sendBtn.disabled = false;
-                addMessage("Co loi ket noi xay ra.", false);
+                addMessage("Có lỗi kết nối xảy ra.", false);
             }
         });
 
