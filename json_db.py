@@ -1,6 +1,7 @@
 """
 JSON-based database replacement for SQLAlchemy.
 Stores all user data in data/users.json
+Fixed: atomic read-modify-write operations to prevent JSON corruption.
 """
 import json
 import os
@@ -17,20 +18,31 @@ def _ensure_data_dir():
         with open(USERS_FILE, 'w', encoding='utf-8') as f:
             json.dump([], f)
 
+def _read_users_unsafe():
+    """Read users WITHOUT acquiring lock (caller must hold lock)."""
+    try:
+        with open(USERS_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except (json.JSONDecodeError, FileNotFoundError):
+        return []
+
+def _write_users_unsafe(users):
+    """Write users WITHOUT acquiring lock (caller must hold lock)."""
+    # Write to temp file first, then rename for atomicity
+    tmp_file = USERS_FILE + '.tmp'
+    with open(tmp_file, 'w', encoding='utf-8') as f:
+        json.dump(users, f, ensure_ascii=False, indent=2)
+    os.replace(tmp_file, USERS_FILE)
+
 def load_users():
     _ensure_data_dir()
     with _lock:
-        try:
-            with open(USERS_FILE, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except (json.JSONDecodeError, FileNotFoundError):
-            return []
+        return _read_users_unsafe()
 
 def save_users(users):
     _ensure_data_dir()
     with _lock:
-        with open(USERS_FILE, 'w', encoding='utf-8') as f:
-            json.dump(users, f, ensure_ascii=False, indent=2)
+        _write_users_unsafe(users)
 
 def _next_id(users):
     if not users:
@@ -50,7 +62,7 @@ def _default_user(id, tendangnhap, matkhau_hash, tenhocsinh=''):
         'socautoan': 0, 'socauly': 0, 'socauhoa': 0, 'socausinh': 0
     }
 
-# --- CRUD Operations ---
+# --- CRUD Operations (all atomic) ---
 
 def get_user_by_id(user_id):
     users = load_users()
@@ -67,26 +79,38 @@ def get_user_by_username(tendangnhap):
     return None
 
 def create_user(tendangnhap, matkhau_hash, tenhocsinh=''):
-    users = load_users()
-    new_id = _next_id(users)
-    user = _default_user(new_id, tendangnhap, matkhau_hash, tenhocsinh)
-    users.append(user)
-    save_users(users)
-    return user
+    """Atomic create: read + append + write in single lock."""
+    _ensure_data_dir()
+    with _lock:
+        users = _read_users_unsafe()
+        # Check for duplicate username
+        for u in users:
+            if u['tendangnhap'] == tendangnhap:
+                raise ValueError(f"Username '{tendangnhap}' already exists")
+        new_id = _next_id(users)
+        user = _default_user(new_id, tendangnhap, matkhau_hash, tenhocsinh)
+        users.append(user)
+        _write_users_unsafe(users)
+        return user
 
 def update_user(user_id, updates: dict):
-    users = load_users()
-    for u in users:
-        if u['id'] == user_id:
-            u.update(updates)
-            save_users(users)
-            return u
+    """Atomic update: read + modify + write in single lock."""
+    _ensure_data_dir()
+    with _lock:
+        users = _read_users_unsafe()
+        for u in users:
+            if u['id'] == user_id:
+                u.update(updates)
+                _write_users_unsafe(users)
+                return u
     return None
 
 def delete_user(user_id):
-    users = load_users()
-    users = [u for u in users if u['id'] != user_id]
-    save_users(users)
+    _ensure_data_dir()
+    with _lock:
+        users = _read_users_unsafe()
+        users = [u for u in users if u['id'] != user_id]
+        _write_users_unsafe(users)
 
 def get_all_users():
     return load_users()
