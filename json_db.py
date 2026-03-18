@@ -1,57 +1,50 @@
 """
-JSON-based database replacement for SQLAlchemy.
-Stores all user data in data/users.json
-Fixed: atomic read-modify-write operations to prevent JSON corruption.
+MongoDB-based database module.
+Drop-in replacement for the previous JSON file-based storage.
+All functions maintain the same interface so app.py does NOT need changes.
+
+Requires: pymongo, python-dotenv
+Environment variable: MONGODB_URI (MongoDB Atlas connection string)
 """
-import json
 import os
-import threading
-from werkzeug.security import generate_password_hash, check_password_hash
+from dotenv import load_dotenv
+from pymongo import MongoClient
+from pymongo.errors import DuplicateKeyError
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
-USERS_FILE = os.path.join(DATA_DIR, 'users.json')
-_lock = threading.Lock()
+load_dotenv()
 
-def _ensure_data_dir():
-    os.makedirs(DATA_DIR, exist_ok=True)
-    if not os.path.exists(USERS_FILE):
-        with open(USERS_FILE, 'w', encoding='utf-8') as f:
-            json.dump([], f)
+# ================== MONGODB CONNECTION ==================
+MONGODB_URI = os.getenv("MONGODB_URI", "")
+DB_NAME = os.getenv("MONGODB_DB_NAME", "khtnsonggu")
 
-def _read_users_unsafe():
-    """Read users WITHOUT acquiring lock (caller must hold lock)."""
-    try:
-        with open(USERS_FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except (json.JSONDecodeError, FileNotFoundError):
-        return []
+if not MONGODB_URI:
+    raise RuntimeError(
+        "[ERROR] MONGODB_URI is not set! "
+        "Please add MONGODB_URI to your .env file.\n"
+        "Example: MONGODB_URI=mongodb+srv://user:password@cluster.mongodb.net/?retryWrites=true&w=majority"
+    )
 
-def _write_users_unsafe(users):
-    """Write users WITHOUT acquiring lock (caller must hold lock)."""
-    # Write to temp file first, then rename for atomicity
-    tmp_file = USERS_FILE + '.tmp'
-    with open(tmp_file, 'w', encoding='utf-8') as f:
-        json.dump(users, f, ensure_ascii=False, indent=2)
-    os.replace(tmp_file, USERS_FILE)
+_client = MongoClient(MONGODB_URI)
+_db = _client[DB_NAME]
+_users_col = _db["users"]
 
-def load_users():
-    _ensure_data_dir()
-    with _lock:
-        return _read_users_unsafe()
+# Ensure unique index on username
+_users_col.create_index("tendangnhap", unique=True)
 
-def save_users(users):
-    _ensure_data_dir()
-    with _lock:
-        _write_users_unsafe(users)
+# ================== HELPER ==================
 
-def _next_id(users):
-    if not users:
-        return 1
-    return max(u['id'] for u in users) + 1
+def _next_id():
+    """Auto-increment ID: find the max id and add 1."""
+    last = _users_col.find_one(sort=[("id", -1)])
+    if last:
+        return last["id"] + 1
+    return 1
 
-def _default_user(id, tendangnhap, matkhau_hash, tenhocsinh=''):
+
+def _default_user(user_id, tendangnhap, matkhau_hash, tenhocsinh=''):
+    """Return a default user document (same schema as before)."""
     return {
-        'id': id,
+        'id': user_id,
         'tendangnhap': tendangnhap,
         'matkhau': matkhau_hash,
         'tenhocsinh': tenhocsinh,
@@ -62,58 +55,68 @@ def _default_user(id, tendangnhap, matkhau_hash, tenhocsinh=''):
         'socautoan': 0, 'socauly': 0, 'socauhoa': 0, 'socausinh': 0
     }
 
-# --- CRUD Operations (all atomic) ---
+
+def _doc_to_dict(doc):
+    """Convert a MongoDB document to a plain dict (remove _id)."""
+    if doc is None:
+        return None
+    d = dict(doc)
+    d.pop('_id', None)
+    return d
+
+
+# ================== CRUD Operations ==================
+
+def load_users():
+    """Return all users as a list of dicts."""
+    return [_doc_to_dict(doc) for doc in _users_col.find()]
+
+
+def save_users(users):
+    """Bulk replace all users (used for migration/seeding only)."""
+    _users_col.delete_many({})
+    if users:
+        _users_col.insert_many(users)
+
 
 def get_user_by_id(user_id):
-    users = load_users()
-    for u in users:
-        if u['id'] == user_id:
-            return u
-    return None
+    doc = _users_col.find_one({"id": user_id})
+    return _doc_to_dict(doc)
+
 
 def get_user_by_username(tendangnhap):
-    users = load_users()
-    for u in users:
-        if u['tendangnhap'] == tendangnhap:
-            return u
-    return None
+    doc = _users_col.find_one({"tendangnhap": tendangnhap})
+    return _doc_to_dict(doc)
+
 
 def create_user(tendangnhap, matkhau_hash, tenhocsinh=''):
-    """Atomic create: read + append + write in single lock."""
-    _ensure_data_dir()
-    with _lock:
-        users = _read_users_unsafe()
-        # Check for duplicate username
-        for u in users:
-            if u['tendangnhap'] == tendangnhap:
-                raise ValueError(f"Username '{tendangnhap}' already exists")
-        new_id = _next_id(users)
-        user = _default_user(new_id, tendangnhap, matkhau_hash, tenhocsinh)
-        users.append(user)
-        _write_users_unsafe(users)
-        return user
+    """Create a new user. Raises ValueError if username already exists."""
+    new_id = _next_id()
+    user = _default_user(new_id, tendangnhap, matkhau_hash, tenhocsinh)
+    try:
+        _users_col.insert_one(user)
+    except DuplicateKeyError:
+        raise ValueError(f"Username '{tendangnhap}' already exists")
+    return _doc_to_dict(_users_col.find_one({"id": new_id}))
+
 
 def update_user(user_id, updates: dict):
-    """Atomic update: read + modify + write in single lock."""
-    _ensure_data_dir()
-    with _lock:
-        users = _read_users_unsafe()
-        for u in users:
-            if u['id'] == user_id:
-                u.update(updates)
-                _write_users_unsafe(users)
-                return u
-    return None
+    """Update a user by id. Returns updated user dict or None."""
+    result = _users_col.find_one_and_update(
+        {"id": user_id},
+        {"$set": updates},
+        return_document=True  # return the updated document
+    )
+    return _doc_to_dict(result)
+
 
 def delete_user(user_id):
-    _ensure_data_dir()
-    with _lock:
-        users = _read_users_unsafe()
-        users = [u for u in users if u['id'] != user_id]
-        _write_users_unsafe(users)
+    _users_col.delete_one({"id": user_id})
+
 
 def get_all_users():
     return load_users()
+
 
 def reset_user_data(user_id):
     return update_user(user_id, {
@@ -124,9 +127,13 @@ def reset_user_data(user_id):
         'nangluc': 'TB', 'lichsu': '', 'lydo': ''
     })
 
-# Initialize on import
-_ensure_data_dir()
+
+# ================== INITIALIZATION ==================
 try:
-    print("[OK] JSON Database initialized at:", USERS_FILE)
-except UnicodeEncodeError:
-    print("[OK] JSON Database initialized.")
+    # Test connection
+    _client.admin.command('ping')
+    count = _users_col.count_documents({})
+    print(f"[OK] MongoDB connected successfully! Database: {DB_NAME}, Users: {count}")
+except Exception as e:
+    print(f"[WARNING] MongoDB connection test failed: {e}")
+    print("         The app will retry on first request.")

@@ -1032,6 +1032,111 @@ def admin_logout():
     flash('Đã đăng xuất admin.', 'success')
     return redirect(url_for('admin'))
 
+# ================== MIGRATION API ==================
+@app.route('/admin/api/migrate-to-mongo', methods=['GET', 'POST'])
+def migrate_to_mongo():
+    """
+    API endpoint to import data from data/users.json into MongoDB Atlas.
+    
+    Usage:
+      - Browser: /admin/api/migrate-to-mongo?secret=YOUR_SECRET_KEY
+      - Or login as admin first, then visit the URL
+    
+    Query params:
+      - secret: must match FLASK_SECRET_KEY or MIGRATE_SECRET in .env
+      - mode: 'skip' (default) = skip existing users, 'replace' = delete all and re-import
+    """
+    # Authentication: either admin session or secret key
+    migrate_secret = os.getenv("MIGRATE_SECRET", app.secret_key)
+    provided_secret = request.args.get('secret', '') or request.form.get('secret', '')
+    
+    is_admin = session.get('admin_session', False)
+    is_secret_valid = provided_secret == migrate_secret
+    
+    if not is_admin and not is_secret_valid:
+        return jsonify({
+            'error': 'Unauthorized. Provide ?secret=YOUR_SECRET_KEY or login as admin first.',
+            'usage': '/admin/api/migrate-to-mongo?secret=YOUR_SECRET_KEY&mode=skip'
+        }), 401
+    
+    # Read users.json
+    data_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'users.json')
+    if not os.path.exists(data_file):
+        return jsonify({'error': f'File not found: data/users.json'}), 404
+    
+    try:
+        with open(data_file, 'r', encoding='utf-8') as f:
+            users_from_json = json.load(f)
+    except Exception as e:
+        return jsonify({'error': f'Failed to read users.json: {str(e)}'}), 500
+    
+    if not isinstance(users_from_json, list):
+        return jsonify({'error': 'users.json must contain a JSON array'}), 400
+    
+    # Import mode
+    mode = request.args.get('mode', 'skip')  # 'skip' or 'replace'
+    
+    # Get MongoDB collection directly from json_db module
+    from pymongo import MongoClient
+    from pymongo.errors import DuplicateKeyError
+    
+    mongodb_uri = os.getenv("MONGODB_URI", "")
+    db_name = os.getenv("MONGODB_DB_NAME", "khtnsonggu")
+    
+    if not mongodb_uri:
+        return jsonify({'error': 'MONGODB_URI is not set in environment variables'}), 500
+    
+    try:
+        client = MongoClient(mongodb_uri)
+        client.admin.command('ping')
+        db = client[db_name]
+        users_col = db["users"]
+        users_col.create_index("tendangnhap", unique=True)
+    except Exception as e:
+        return jsonify({'error': f'MongoDB connection failed: {str(e)}'}), 500
+    
+    # Check existing data
+    existing_count = users_col.count_documents({})
+    
+    if mode == 'replace' and existing_count > 0:
+        users_col.delete_many({})
+        existing_count = 0
+    
+    # Insert users
+    inserted = 0
+    skipped = 0
+    errors_list = []
+    
+    for user in users_from_json:
+        user_copy = dict(user)
+        user_copy.pop('_id', None)  # Remove MongoDB _id if present
+        try:
+            users_col.insert_one(user_copy)
+            inserted += 1
+        except DuplicateKeyError:
+            skipped += 1
+        except Exception as e:
+            errors_list.append({
+                'user': user_copy.get('tendangnhap', '?'),
+                'error': str(e)
+            })
+    
+    final_count = users_col.count_documents({})
+    
+    return jsonify({
+        'success': True,
+        'message': 'Migration completed!',
+        'source_file': 'data/users.json',
+        'total_in_json': len(users_from_json),
+        'mode': mode,
+        'existing_before': existing_count,
+        'inserted': inserted,
+        'skipped_duplicate': skipped,
+        'errors': len(errors_list),
+        'error_details': errors_list[:10],  # Show max 10 errors
+        'total_in_mongodb': final_count
+    })
+
 # ================== CHẠY APP ==================
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
